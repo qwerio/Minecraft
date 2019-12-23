@@ -1,6 +1,5 @@
 #pragma once
 
-#include <GL\freeglut.h>
 #include <iostream>
 #include <math.h>
 
@@ -15,6 +14,10 @@ public:
 	Application() : frameIndex(0) {
 
 	}
+	void onInit() {
+		renderer.init();
+	}
+
 	void onDraw() {
 		frameIndex++;
 		std::cout << "Application" << std::endl;

@@ -14,6 +14,12 @@ endif()
 #    link_libraries(${SDL2_LIBRARIES})
 #endif()
 
+find_package(OpenGL REQUIRED)
+if (OPENGL_FOUND)
+    include_directories(${OPENGL_INCLUDE_DIR})
+    link_libraries(${OPENGL_LIBRARIES})
+endif()
+
 find_package(GLUT REQUIRED)
 if (GLUT_FOUND)
     include_directories(${GLUT_INCLUDE_DIRS})
@@ -26,6 +32,12 @@ if (GLM_FOUND)
     link_libraries(${GLM_LIBRARIES})
 endif()
 
+find_package(SOIL REQUIRED)
+if (SOIL_FOUND)
+    include_directories(${SOIL_INCLUDE_DIRS})
+    link_libraries(${SOIL_LIBRARIES})
+endif()
+
 add_executable(
 	main 
 	main.cpp
@@ -35,9 +47,9 @@ add_executable(
 	Renderer.h
     Application.h
     Application.cpp
-    #Shader.h
-    #shaders/vertex.vs
-    #shaders/fragment.fs
+    Shader.h
+    shaders/vertex.vs
+    shaders/fragment.fs
 )
 
 #target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)

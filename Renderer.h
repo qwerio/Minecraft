@@ -1,20 +1,26 @@
 #pragma once
 
-#include <GL\freeglut.h>
+#include <GL/glew.h>
+#include <SOIL/SOIL.h>
+
 #include <iostream>
 
-//#include <GL/glew.h>
+#include "Shader.h"
 
 #include <glm/vec3.hpp>
+
 using namespace glm;
 
 class Renderer {
 private:
-	//GLuint VAO;
+	GLuint VAO;
+	GLuint shaderIndex;
+	Shader shader;
+	int texture;
 
 public:
 
-	Renderer()/*: VAO(0)*/ {
+	Renderer() : VAO(0) {
 
 	}
 
@@ -23,11 +29,18 @@ public:
 
 		glClearColor(color.x, color.y, color.z, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glBindVertexArray(VAO);
+		shader.use();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}
 
 	void init() {
+		if (glewInit()) {
+			std::cout << "Failed to initialize GLEW" << std::endl;
+		}
 
-		/*GLfloat vertices[] = {
+		GLfloat vertices[] = {
 			//vertex position //vertex color
 			0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,  // top right
 			0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // bottom right
@@ -73,10 +86,13 @@ public:
 		// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 		glBindVertexArray(0);
 		//the elements buffer must be unbound after the vertex array otherwise the vertex array will not have an associated elements buffer array
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 	}
 
-	void drawCube() {
+	void DrawCube(GLuint vaoID)
+	{
 
 	}
 };
