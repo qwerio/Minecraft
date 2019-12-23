@@ -50,6 +50,7 @@ add_executable(
     Shader.h
     shaders/vertex.vs
     shaders/fragment.fs
+    stb_image.h
 )
 
 #target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)
