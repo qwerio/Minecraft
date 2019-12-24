@@ -32,7 +32,6 @@ void Window::onDrawStatic() {
 }
 
 void Window::onDraw() {
-	std::cout << "sdasd " << std::endl;
 	app->onDraw();
 	glutSwapBuffers();
 	glutPostRedisplay();

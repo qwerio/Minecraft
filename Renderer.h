@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 
 #include "Shader.h"
 
@@ -13,13 +14,13 @@ private:
 	GLuint VAO;
 	GLuint shaderIndex;
 	Shader shader;
-	GLuint textureID;
+	std::vector<GLuint> texturesID;
 
 public:
 
 	Renderer();
 
-	void onRender(const vec3& color);
+	void onRender(const vec3& color, int frameIndex);
 
 	void init();
 
