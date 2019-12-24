@@ -53,6 +53,7 @@ add_executable(
     stb_image.h
     Material.h
     Node.h
+    Camera.h
 )
 
 #target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)

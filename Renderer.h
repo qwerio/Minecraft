@@ -9,6 +9,8 @@
 
 using namespace glm;
 
+class Camera;
+
 class Renderer {
 private:
 	GLuint VAO;
@@ -20,7 +22,7 @@ public:
 
 	Renderer();
 
-	void onRender(const vec3& color, int frameIndex);
+	void onRender(const Camera& camera,const vec3& color, int frameIndex);
 
 	void init();
 

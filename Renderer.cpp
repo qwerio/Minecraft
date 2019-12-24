@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Renderer.h"
+#include "Camera.h"
 
 #define STB_IMAGE_IMPLEMENTATION //if not defined the function implementations are not included
 #include "stb_image.h"
@@ -15,13 +16,14 @@ Renderer::Renderer() : VAO(0), shaderIndex(0) {
 
 }
 
-void Renderer::onRender(const vec3& color, int frameIndex) {
+void Renderer::onRender(const Camera& camera, const vec3& color, int frameIndex) {
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glBindVertexArray(VAO);
 
 	float theta = frameIndex * 0.01f;
+
 	mat4 rotationY = mat4(
 		vec4(cos(theta),  0.0f, sin(theta), 0.0f),
 		vec4(0.0f,		  1.0f, 0.0f,		0.0f),
@@ -43,12 +45,15 @@ void Renderer::onRender(const vec3& color, int frameIndex) {
 		vec4(0.0f, 0.0f,0.0f, 1.0f)
 	);
 
+
 	shader.use();
 	shader.setInt("Texture1", 0);
 	shader.setMat4("model", rotationX);
+	shader.setMat4("view", camera.GetViewMatrix());
+	//TODO: Get width and height from parameters
+	shader.setMat4("proj", camera.GetProjMatrix(640, 480));
 
 	glBindTexture(GL_TEXTURE_2D, texturesID[0]);
-
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
@@ -153,6 +158,7 @@ void Renderer::init() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
+	Camera camera(glm::vec3(0.0f, 2.0f, 3.0f));
 }
 
 bool Renderer::LoadTexture(const char* filename, GLuint& texID)

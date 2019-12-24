@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "Camera.h"
 
 #include <GL\freeglut.h>
 
@@ -39,5 +40,36 @@ void Window::onDraw() {
 
 void Window::startMainLoop() {
 	glutDisplayFunc(&Window::onDrawStatic);
+	glutKeyboardFunc(&Window::onKeyDownStatic);
+	glutSpecialFunc(&Window::onKeyDownSpecialStatic);
 	glutMainLoop();
 }
+
+void Window::onKeyDownSpecialStatic(int key, int x, int y) {
+	int id = glutGetWindow();
+	Window* window = windows[id];
+	if (window) {
+		window->onKeyDown(key);
+	}
+	else {
+		std::cout << "Error Window Loading" << std::endl;
+	}
+}
+
+void Window::onKeyDownStatic(unsigned char key, int x, int y) {
+	int id = glutGetWindow();
+	Window* window = windows[id];
+	if (window) {
+		window->onKeyDown(key);
+	}
+	else {
+		std::cout << "Error Window Loading" << std::endl;
+	}
+}
+
+void Window::onKeyDown(int key) {
+	app->onKeyDown(key);
+}
+
+void Window::onMouseMotion(){}
+void Window::onMouseWheel(){}

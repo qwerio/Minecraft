@@ -16,6 +16,5 @@ int main(int argc, char** argv)
 	window.init("Minecraft", 640, 480, &app);
 	window.startMainLoop();
 
-
 	return 0;
 }

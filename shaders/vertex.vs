@@ -15,8 +15,8 @@ out vec3 Normal;
 
 void main()
 {
-	//gl_Position = proj * view * model * vec4(aPos, 1.0);
-	gl_Position = model * vec4(aPos, 1.0);	
+	gl_Position = proj * view * model * vec4(aPos, 1.0);
+	//gl_Position = view * model * vec4(aPos, 1.0);	
 
 	Color = aColor;
 	TexCoord = aTexture;
