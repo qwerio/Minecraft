@@ -7,6 +7,9 @@
 using namespace glm; 
 
 class Node {
+
+
+
 private:
 	mat4 model;
 	Material* material;

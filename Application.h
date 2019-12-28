@@ -5,30 +5,44 @@
 
 #include "Renderer.h"
 #include "Camera.h"
+#include "Texture.h"
 
 #include <glm/vec3.hpp>
 
 #include <GL\freeglut.h>
 
+
 using namespace glm;
 
+/*TO DO: Add storing and loading functionality
+		list of the nodes
+		their materials
+		camera postiont
+*/
 class Application {
 
 public:
-	Application() : frameIndex(0), height(480), width(640), lastX(0), lastY(0), firstMouse(true){
+	Application() : frameIndex(0), height(480), width(640)
+	{
 
 	}
 
-	void onInit() {
+	void onInit() 
+	{
 		renderer.init();
+		groundMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
+		groundTexture = renderer.CreateTextureFromFile("C:/Users/ASUS/Desktop/grassBlock.jpg");
+
+		groundMaterial->textures;
+
 	}
 
 	void onDraw() {
 		frameIndex++;
 		// TODO: update scene
 		// TODO: pass scene to renderer
-
-		renderer.onRender(camera, settings, frameIndex);
+		
+		renderer.onRender(camera, settings, groundMaterial, frameIndex);
 	}
 
 	void onKeyDown(int key) {
@@ -68,7 +82,7 @@ public:
 		}
 	}
 
-	//Later
+	//TO DO: Later
 	//void onMouseWheel() {}
 
 private:
@@ -81,4 +95,6 @@ private:
 	RenderSettings settings;
 	Renderer renderer;
 	Camera camera;
+	Material *groundMaterial;
+	Texture *groundTexture;
 };

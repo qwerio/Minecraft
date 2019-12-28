@@ -54,6 +54,7 @@ add_executable(
     Material.h
     Node.h
     Camera.h
+    Texture.h
 )
 
 #target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)

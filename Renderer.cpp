@@ -5,6 +5,9 @@
 
 #include "Renderer.h"
 #include "Camera.h"
+#include "Shader.h"
+#include "Material.h"
+#include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION //if not defined the function implementations are not included
 #include "stb_image.h"
@@ -16,7 +19,7 @@ Renderer::Renderer() : VAO(0), shaderIndex(0) {
 
 }
 
-void Renderer::onRender(const Camera& camera, const RenderSettings& settings, int frameIndex) {
+void Renderer::onRender(const Camera& camera, const RenderSettings& settings, Material* material, int frameIndex) {
 
 	const vec4& color = settings.backGroundColor;
 	glClearColor(color.x, color.y, color.z, 1.0f);
@@ -47,6 +50,7 @@ void Renderer::onRender(const Camera& camera, const RenderSettings& settings, in
 		vec4(0.0f, 0.0f,0.0f, 1.0f)
 	);
 
+	Shader& shader = materials[material];
 	shader.use();
 	shader.setInt("Texture1", 0);
 	shader.setMat4("model", camera.GetModelMatrix());
@@ -54,7 +58,11 @@ void Renderer::onRender(const Camera& camera, const RenderSettings& settings, in
 	//TODO: Get width and height from parameters
 	shader.setMat4("proj", camera.GetProjMatrix(640, 480));
 
-	glBindTexture(GL_TEXTURE_2D, texturesID[0]);
+	for (int i = 0; i < material->textures.size(); i++) {
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, material->textures[i]->ID);
+	}
+
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
@@ -152,9 +160,9 @@ void Renderer::init() {
 	//the elements buffer must be unbound after the vertex array otherwise the vertex array will not have an associated elements buffer array
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	texturesID.resize(1);
-	shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
-	LoadTexture("C:/Users/ASUS/Desktop/grassBlock.jpg", texturesID[0]);
+	//texturesID.resize(1);
+	//shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
+	//LoadTexture("C:/Users/ASUS/Desktop/grassBlock.jpg", texturesID[0]);
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -200,3 +208,83 @@ bool Renderer::LoadTexture(const char* filename, GLuint& texID)
 
 	return true;
 }
+
+Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath) {
+	//TO DO: Move everything from shader.h to render.h 
+	
+	Material* material = new Material();
+	materials[material].Load(vertexPath, fragmentPath);
+
+	return material;
+}
+
+/*
+Material* Renderer::CreateMaterial()
+{
+
+}
+*/
+
+void Renderer::DestroyMaterial(Material* material)
+{
+	Materials::iterator it = materials.find(material);
+	if (it != materials.end())
+	{
+		materials.erase(it);
+	}
+	delete  material;
+}
+
+Texture* Renderer::CreateTextureFromFile(const char* textureFilename)
+{
+	Texture* texture = new Texture();
+	textures.insert(texture);
+
+	glGenTextures(1, &texture->ID);
+	glBindTexture(GL_TEXTURE_2D, texture->ID);
+	// set the texture wrapping/filtering options (on the currently bound texture object)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); //these are the default values for warping
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// read the texture
+	GLint width, height, channels;
+	stbi_set_flip_vertically_on_load(true); //flip the image vertically while loading
+	unsigned char* img_data = stbi_load(textureFilename, &width, &height, &channels, 0); //read the image data
+
+	if (img_data)
+	{   //3 channels - rgb, 4 channels - RGBA
+		GLenum format;
+		switch (channels)
+		{
+		case 4:
+			format = GL_RGBA;
+			break;
+		default:
+			format = GL_RGB;
+			break;
+		}
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, img_data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		printf("Failed to load texture\n");
+	}
+	stbi_image_free(img_data);
+
+	return texture;
+}
+
+void Renderer::DestroyTexture(Texture* texture)
+{
+	Textures::iterator it = textures.find(texture);
+	if (it != textures.end())
+	{
+		textures.erase(it);
+	}
+	delete texture;
+}
+
+void CreateNode() {}
