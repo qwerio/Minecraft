@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Texture.h"
+#include "Material.h"
 
 #include <glm/vec3.hpp>
 
@@ -32,17 +33,14 @@ public:
 		renderer.init();
 		groundMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 		groundTexture = renderer.CreateTextureFromFile("C:/Users/ASUS/Desktop/grassBlock.jpg");
-
-		groundMaterial->textures;
-
+		groundMaterial->textures.push_back(groundTexture);
+		cubeMesh = renderer.CreateMesh(MeshType::CUBE);
 	}
 
 	void onDraw() {
 		frameIndex++;
 		// TODO: update scene
-		// TODO: pass scene to renderer
-		
-		renderer.onRender(camera, settings, groundMaterial, frameIndex);
+		renderer.onRender(camera, settings, scene, frameIndex);
 	}
 
 	void onKeyDown(int key) {
@@ -64,6 +62,9 @@ public:
 			camera.ProcessKeyboard(Camera_Movement::LEFT, 0.016f);
 			std::cout << "LEFT" << std::endl;
 			break;
+		case(GLUT_KEY_F1):
+			CreateNode();
+			break;
 		}
 
 	}
@@ -82,6 +83,25 @@ public:
 		}
 	}
 
+	void CreateNode()
+	{
+		scene.push_back(Node());
+		Node& node = scene[scene.size() - 1];
+		const vec3& pos = camera.Position;
+		node.model = mat4(
+			vec4(1.0f, 0.0f, 0.0f, 0.0f),
+			vec4(0.0f, 1.0f, 0.0f, 0.0f),
+			vec4(0.0f, 0.0f, 1.0f, 0.0f),
+			vec4(pos.x, pos.y, pos.z, 1.0f)
+		);
+
+		node.material = groundMaterial;
+		node.mesh = cubeMesh;
+		//TO DO: find cell index from camera.Postion, cell size = cube size
+		//TO DO: avoid creating multiple cubes in the same cell
+	}
+
+
 	//TO DO: Later
 	//void onMouseWheel() {}
 
@@ -95,6 +115,9 @@ private:
 	RenderSettings settings;
 	Renderer renderer;
 	Camera camera;
+	Scene scene;
 	Material *groundMaterial;
 	Texture *groundTexture;
+	Mesh* cubeMesh;
+	
 };

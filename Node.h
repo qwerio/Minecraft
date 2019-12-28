@@ -1,19 +1,16 @@
 #pragma once
 
-#include "Material.h"
-
 #include <glm/glm.hpp>
 
 using namespace glm; 
 
+//forward declarations
+class Material;
+class Mesh;
+
 class Node {
-
-
-
-private:
+public:
 	mat4 model;
 	Material* material;
-	int geometryID;
+	Mesh* mesh;
 };
-
-// std::vector<Node>

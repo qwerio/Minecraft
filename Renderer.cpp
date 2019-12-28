@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "Material.h"
 #include "Texture.h"
+#include "Mesh.h"
 
 #define STB_IMAGE_IMPLEMENTATION //if not defined the function implementations are not included
 #include "stb_image.h"
@@ -15,150 +16,46 @@
 using namespace std;
 using namespace glm;
 
-Renderer::Renderer() : VAO(0), shaderIndex(0) {
+Renderer::Renderer()
+{
 
 }
 
-void Renderer::onRender(const Camera& camera, const RenderSettings& settings, Material* material, int frameIndex) {
+void Renderer::onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) {
 
 	const vec4& color = settings.backGroundColor;
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	for (int i = 0; i < scene.size(); i++) {
+		const Node& node = scene[i];
+		//TO DO: Avoid calling it more than once
+		glBindVertexArray(node.mesh->ID);
 
-	glBindVertexArray(VAO);
+		//TO DO: Change scene to map<Material*, Nodes> for more efficient rendering
+		Material* material = const_cast<Material*>(node.material);
+		Shader& shader = materials[material];
+		shader.use();
+		shader.setInt("Texture1", 0); // TODO: move to texture loop (need to use either stringstream or sprintf)
+		shader.setMat4("model", node.model);
+		shader.setMat4("view", camera.GetViewMatrix());
+		//TO DO: Get width and height from parameters, from redersettings
+		shader.setMat4("proj", camera.GetProjMatrix(640, 480));
 
-	float theta = frameIndex * 0.01f;
+		for (int j = 0; j < material->textures.size(); j++) {
+			glActiveTexture(GL_TEXTURE0 + j);
+			glBindTexture(GL_TEXTURE_2D, material->textures[j]->ID);
+		}
 
-	mat4 rotationY = mat4(
-		vec4(cos(theta),  0.0f, sin(theta), 0.0f),
-		vec4(0.0f,		  1.0f, 0.0f,		0.0f),
-		vec4(-sin(theta), 0.0f, cos(theta), 0.0f),
-		vec4(0.0f,		  0.0f, 0.0f,		1.0f)
-	);
-
-	mat4 rotationZ = mat4(
-		vec4(cos(theta),  sin(theta), 0.0f, 0.0f),
-		vec4(-sin(theta), cos(theta), 0.0f, 0.0f),
-		vec4(0.0f,        0.0f,		  1.0f, 0.0f),
-		vec4(0.0f,		  0.0f,		  0.0f,	1.0f)
-	);
-
-	mat4 rotationX = mat4(
-		vec4(1.0f, 0.0f, 0.0f, 0.0f),
-		vec4(0.0f, cos(theta), -sin(theta), 0.0f),
-		vec4(0.0f, sin(theta), cos(theta), 0.0f),
-		vec4(0.0f, 0.0f,0.0f, 1.0f)
-	);
-
-	Shader& shader = materials[material];
-	shader.use();
-	shader.setInt("Texture1", 0);
-	shader.setMat4("model", camera.GetModelMatrix());
-	shader.setMat4("view", camera.GetViewMatrix());
-	//TODO: Get width and height from parameters
-	shader.setMat4("proj", camera.GetProjMatrix(640, 480));
-
-	for (int i = 0; i < material->textures.size(); i++) {
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, material->textures[i]->ID);
+		glDrawElements(GL_TRIANGLES, node.mesh->vertexCount, GL_UNSIGNED_INT, 0);
 	}
-
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	
 }
 
 void Renderer::init() {
 	if (glewInit()) {
 		std::cout << "Failed to initialize GLEW" << std::endl;
 	}
-
-	GLfloat vertices[] = {
-	//  vertex position      vertex color        tex coords    norm
-
-		//front side
-		-0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	0
-		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, // 	1
-		0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	2
-		-0.5f,  0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 	3
-	   //right side
-		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	1
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	4
-		0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	5
-		0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, //	2
-		//back side
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	4
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	7
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	6
-		0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, //	5
-	   //left side
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, // 7
-		-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	0
-		-0.5f,  0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	3
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 6
-		//top side
-		-0.5f,  0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.0f, 0.0f,   0.0f, 0.0f, 0.0f, // 3
-		0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 2
-		0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.3f, 1.0f,   0.0f, 0.0f, 0.0f, // 5
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,   0.0f, 0.0f, 0.0f, //	6
-		//bottom side
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,   0.0f, 0.0f, 0.0f, //	7
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 0.0f, //	4
-		0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	1
-		-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f  // 0
-	};
-
-	//indexed drawing - we will be using the indices to point to a vertex in the vertices array
-	const int size = 12 * 3;
-	
-	GLuint indices[size] = {};
-
-	for (int i = 0; i < size; i+=6) {
-		int offset = (i / 6) * 4;
-		indices[i]     = 0 + offset;
-		indices[i + 1] = 1 + offset;
-		indices[i + 2] = 2 + offset;
-		indices[i + 3] = 0 + offset;
-		indices[i + 4] = 2 + offset;
-		indices[i + 5] = 3 + offset;
-	}
-
-	GLuint VBO, EBO;
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	glGenVertexArrays(1, &VAO);
-
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	const int stride = (3 + 3 + 2 + 3) * sizeof(float); // 3 floats for pos, 3 floats for color, 2 floats for tex coords, 3 floats for normal
-
-	//we have to change the stride to 6 floats, as each vertex now has 6 attribute values
-	//the last value (pointer) is still 0, as the position values start from the beginning
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0); //the data comes from the currently bound GL_ARRAY_BUFFER
-	glEnableVertexAttribArray(0);
-
-	//here the pointer is the size of 3 floats, as the color values start after the 3rd value from the beginning
-	//in other words we have to skip the first 3 floats of the vertex attributes to get to the color values
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
-	glEnableVertexAttribArray(3);
-
-	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	glBindVertexArray(0);
-	//the elements buffer must be unbound after the vertex array otherwise the vertex array will not have an associated elements buffer array
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//texturesID.resize(1);
 	//shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
@@ -217,13 +114,6 @@ Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* f
 
 	return material;
 }
-
-/*
-Material* Renderer::CreateMaterial()
-{
-
-}
-*/
 
 void Renderer::DestroyMaterial(Material* material)
 {
@@ -287,4 +177,117 @@ void Renderer::DestroyTexture(Texture* texture)
 	delete texture;
 }
 
-void CreateNode() {}
+Mesh* Renderer::CreateMesh(MeshType type) 
+{
+	if (type != MeshType::CUBE)
+	{
+		return nullptr;
+	}
+
+	Mesh* mesh = new Mesh();
+	meshes.insert(mesh);
+
+	GLfloat vertices[] = {
+		//  vertex position      vertex color        tex coords    norm
+
+			//front side
+			-0.5f, -0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	0
+			0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, // 	1
+			0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	2
+			-0.5f,  0.5f, 0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 	3
+		   //right side
+			0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	1
+			0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	4
+			0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	5
+			0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, //	2
+			//back side
+			0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, //	4
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	7
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	6
+			0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, //	5
+		   //left side
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f, // 7
+			-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	0
+			-0.5f,  0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.3f, 1.0f,   0.0f, 0.0f, 0.0f, //	3
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 6
+			//top side
+			-0.5f,  0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.0f, 0.0f,   0.0f, 0.0f, 0.0f, // 3
+			0.5f,  0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   0.3f, 0.0f,   0.0f, 0.0f, 0.0f, // 2
+			0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   0.3f, 1.0f,   0.0f, 0.0f, 0.0f, // 5
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,   0.0f, 0.0f, 0.0f, //	6
+			//bottom side
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f,   0.0f, 0.0f, 0.0f, //	7
+			0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,   1.0f, 1.0f,   0.0f, 0.0f, 0.0f, //	4
+			0.5f, -0.5f, 0.5f,   1.0f, 0.0f, 0.0f,   0.6f, 1.0f,   0.0f, 0.0f, 0.0f, //	1
+			-0.5f, -0.5f, 0.5f,   0.0f, 1.0f, 0.0f,  0.6f, 0.0f,   0.0f, 0.0f, 0.0f  // 0
+	};
+
+	//indexed drawing - we will be using the indices to point to a vertex in the vertices array
+	const int size = 12 * 3;
+
+	GLuint indices[size] = {};
+
+	for (int i = 0; i < size; i += 6) {
+		int offset = (i / 6) * 4;
+		indices[i] = 0 + offset;
+		indices[i + 1] = 1 + offset;
+		indices[i + 2] = 2 + offset;
+		indices[i + 3] = 0 + offset;
+		indices[i + 4] = 2 + offset;
+		indices[i + 5] = 3 + offset;
+	}
+
+	GLuint VBO, EBO, VAO;
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	glGenVertexArrays(1, &VAO);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	const int stride = (3 + 3 + 2 + 3) * sizeof(float); // 3 floats for pos, 3 floats for color, 2 floats for tex coords, 3 floats for normal
+
+	//we have to change the stride to 6 floats, as each vertex now has 6 attribute values
+	//the last value (pointer) is still 0, as the position values start from the beginning
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0); //the data comes from the currently bound GL_ARRAY_BUFFER
+	glEnableVertexAttribArray(0);
+
+	//here the pointer is the size of 3 floats, as the color values start after the 3rd value from the beginning
+	//in other words we have to skip the first 3 floats of the vertex attributes to get to the color values
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)(8 * sizeof(float)));
+	glEnableVertexAttribArray(3);
+
+	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+	glBindVertexArray(0);
+	//the elements buffer must be unbound after the vertex array otherwise the vertex array will not have an associated elements buffer array
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	mesh->ID = VAO;
+	mesh->vertexCount = size;
+
+	return mesh;
+}
+
+void Renderer::DestroyMesh(Mesh* mesh)
+{
+	Meshes::iterator it = meshes.find(mesh);
+	if (it != meshes.end())
+	{
+		meshes.erase(it);
+	}
+	delete mesh;
+}

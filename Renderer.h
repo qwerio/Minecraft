@@ -8,21 +8,27 @@
 #include "Shader.h"
 #include "Node.h"
 
+
 #include <glm/vec3.hpp>
 
 
 using namespace glm;
 
+
+//forward class declarations
 class Camera;
 class Material;
-//TO DO: Implement Texture class
 class Texture;
+class Mesh;
 
-
+//add width and height to the struct
 struct RenderSettings{
 	vec4 backGroundColor;
 };
 
+enum class MeshType {
+	CUBE
+};
 
 typedef std::vector<Node> Scene;
 
@@ -33,7 +39,7 @@ public:
 
 	Renderer();
 
-	void onRender(const Camera& camera, const RenderSettings& settings, Material* material, int frameIndex);
+	void onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex);
 
 	void init();
 
@@ -44,15 +50,16 @@ public:
 	Texture* CreateTextureFromFile(const char* textureFilename);
 	void DestroyTexture(Texture* texture);
 
+	Mesh* CreateMesh(MeshType type);
+	void DestroyMesh(Mesh* mesh);
+
 	void CreateNode();
 
 private:
-	GLuint VAO;
-	GLuint shaderIndex;
-	Shader shader;
-
 	typedef std::unordered_set<Texture*> Textures;
 	typedef std::unordered_map<Material*, Shader> Materials;
+	typedef std::unordered_set<Mesh*> Meshes;
 	std::unordered_set<Texture*> textures;
 	std::unordered_map<Material*, Shader> materials;
+	std::unordered_set<Mesh*> meshes;
 };
