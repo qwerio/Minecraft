@@ -87,7 +87,8 @@ public:
 	{
 		scene.push_back(Node());
 		Node& node = scene[scene.size() - 1];
-		const vec3& pos = camera.Position;
+		const vec3& pos = camera.Position + floor(camera.Front * 5.0f);
+
 		node.model = mat4(
 			vec4(1.0f, 0.0f, 0.0f, 0.0f),
 			vec4(0.0f, 1.0f, 0.0f, 0.0f),
@@ -99,6 +100,9 @@ public:
 		node.mesh = cubeMesh;
 		//TO DO: find cell index from camera.Postion, cell size = cube size
 		//TO DO: avoid creating multiple cubes in the same cell
+
+
+
 	}
 
 
