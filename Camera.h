@@ -64,6 +64,17 @@ public:
 	}
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+
+	glm::mat4 GetModelMatrix() const
+	{
+		return	glm::mat4(
+			vec4(1.0f, 0.0f, 0.0f, 0.0f),
+			vec4(0.0f, 1.0f, 0.0f, 0.0f),
+			vec4(0.0f, 0.0f, 1.0f, 0.0f),
+			vec4(0.0f, 0.0f, 0.0f, 1.0f)
+		);
+	}
+
 	glm::mat4 GetViewMatrix() const
 	{
 		return glm::lookAt(Position, Position + Front, Up);
@@ -75,6 +86,10 @@ public:
 		return glm::perspective(3.1415f/6.0f, (float)width / (float)height, 0.01f, 1000.0f);
 	}
 	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+	
+	
+	//TO DO: using real delta
+	
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	{
 		float velocity = MovementSpeed * deltaTime;

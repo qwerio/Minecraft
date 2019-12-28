@@ -32,19 +32,6 @@ void Window::onDrawStatic() {
 	}
 }
 
-void Window::onDraw() {
-	app->onDraw();
-	glutSwapBuffers();
-	glutPostRedisplay();
-}
-
-void Window::startMainLoop() {
-	glutDisplayFunc(&Window::onDrawStatic);
-	glutKeyboardFunc(&Window::onKeyDownStatic);
-	glutSpecialFunc(&Window::onKeyDownSpecialStatic);
-	glutMainLoop();
-}
-
 void Window::onKeyDownSpecialStatic(int key, int x, int y) {
 	int id = glutGetWindow();
 	Window* window = windows[id];
@@ -67,9 +54,38 @@ void Window::onKeyDownStatic(unsigned char key, int x, int y) {
 	}
 }
 
+void Window::onPassiveMouseMotionStatic(int x, int y) {
+	int id = glutGetWindow();
+	Window* window = windows[id];
+	if (window) {
+		window->onPassiveMouseMotion(x, y);
+	}
+	else {
+		std::cout << "Error Window Loading" << std::endl;
+	}
+}
+
+void Window::onDraw() {
+	app->onDraw();
+	glutSwapBuffers();
+	glutPostRedisplay();
+}
+
 void Window::onKeyDown(int key) {
 	app->onKeyDown(key);
 }
 
-void Window::onMouseMotion(){}
-void Window::onMouseWheel(){}
+void Window::onPassiveMouseMotion(int x, int y) {
+	app->onPassiveMouseMotion(x, y);
+}
+
+// Later
+//void Window::onMouseWheel(){}
+
+void Window::startMainLoop() {
+	glutDisplayFunc(&Window::onDrawStatic);
+	glutKeyboardFunc(&Window::onKeyDownStatic);
+	glutSpecialFunc(&Window::onKeyDownSpecialStatic);
+	glutPassiveMotionFunc(&Window::onPassiveMouseMotionStatic);
+	glutMainLoop();
+}

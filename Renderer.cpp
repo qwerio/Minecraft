@@ -45,10 +45,9 @@ void Renderer::onRender(const Camera& camera, const vec3& color, int frameIndex)
 		vec4(0.0f, 0.0f,0.0f, 1.0f)
 	);
 
-
 	shader.use();
 	shader.setInt("Texture1", 0);
-	shader.setMat4("model", rotationX);
+	shader.setMat4("model", camera.GetModelMatrix());
 	shader.setMat4("view", camera.GetViewMatrix());
 	//TODO: Get width and height from parameters
 	shader.setMat4("proj", camera.GetProjMatrix(640, 480));

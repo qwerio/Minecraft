@@ -53,13 +53,31 @@ public:
 		}
 
 	}
-	void onMouseMotion() {}
-	void onMouseWheel() {}
+	void onPassiveMouseMotion(int x, int y) {
+		if (firstMouse)
+		{
+			lastX = x;
+			lastY = y;
+			firstMouse = false;
+		}
+		else
+		{
+			camera.ProcessMouseMovement(x - lastX, lastY - y);
+			lastX = x;
+			lastY = y;
+		}
+	}
+
+	//Later
+	//void onMouseWheel() {}
 
 private:
 	int height;
 	int width;
 	int frameIndex;
+	int lastX;
+	int lastY;
+	bool firstMouse = true;
 	Renderer renderer;
 	Camera camera;
 };
