@@ -24,6 +24,8 @@ class Mesh;
 //add width and height to the struct
 struct RenderSettings{
 	vec4 backGroundColor;
+	int width;
+	int height;
 };
 
 enum class MeshType {

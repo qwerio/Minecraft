@@ -12,8 +12,11 @@ int main(int argc, char** argv)
 
 	Window window;
 	Application app;
+	RenderSettings settings;
+	settings.height = 1080;
+	settings.width = 1920;
 
-	window.init("Minecraft", 640, 480, &app);
+	window.init("Minecraft", settings.width, settings.height, &app);
 	window.startMainLoop();
 
 	return 0;
