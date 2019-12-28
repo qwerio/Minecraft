@@ -30,7 +30,7 @@ enum class MeshType {
 	CUBE
 };
 
-typedef std::vector<Node> Scene;
+typedef std::unordered_map<uint64_t, Node> Scene;
 
 class Renderer {
 
@@ -47,6 +47,7 @@ public:
 
 	Material* CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath);
 	void DestroyMaterial(Material* material);
+
 	Texture* CreateTextureFromFile(const char* textureFilename);
 	void DestroyTexture(Texture* texture);
 
@@ -54,12 +55,13 @@ public:
 	void DestroyMesh(Mesh* mesh);
 
 	void CreateNode();
+	void DestroyNode();
 
 private:
 	typedef std::unordered_set<Texture*> Textures;
 	typedef std::unordered_map<Material*, Shader> Materials;
 	typedef std::unordered_set<Mesh*> Meshes;
-	std::unordered_set<Texture*> textures;
-	std::unordered_map<Material*, Shader> materials;
-	std::unordered_set<Mesh*> meshes;
+	Textures textures;
+	Materials materials;
+	Meshes meshes;
 };

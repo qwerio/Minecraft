@@ -65,6 +65,9 @@ public:
 		case(GLUT_KEY_F1):
 			CreateNode();
 			break;
+		case(GLUT_KEY_F2):
+			DestroyNode();
+			break;
 		}
 
 	}
@@ -85,23 +88,17 @@ public:
 
 	void CreateNode()
 	{
-		const vec3& pos = floor(camera.Position + camera.Front * 5.0f);
-		const int halfDimension = (1 << 19);
-		if (abs(pos.x) > float(halfDimension) || abs(pos.y) > float(halfDimension) || abs(pos.z) > float(halfDimension))
+		uint64_t index;
+		vec3 pos;
+		if (!getCellIndex(camera, index, pos))
 			return;
-		uint64 x = pos.x + halfDimension;
-		uint64 y = pos.y + halfDimension;
-		uint64 z = pos.z + halfDimension;
 
-		uint64_t index = x | (y << 20) | (z << 40);
-		UsedCells::iterator it = usedCells.find(index);
-		if (it != usedCells.end())
+		Scene::iterator it = scene.find(index);
+		if (it != scene.end())
 			return;
 		
-		usedCells.insert(index);
-
-		scene.push_back(Node());
-		Node& node = scene[scene.size() - 1];
+		//Insert Node to the Scene
+		Node& node = scene[index];
 
 		node.model = mat4(
 			vec4(1.0f, 0.0f, 0.0f, 0.0f),
@@ -112,6 +109,38 @@ public:
 
 		node.material = groundMaterial;
 		node.mesh = cubeMesh;
+	}
+
+	void DestroyNode() 
+	{
+		uint64_t index;
+		vec3 pos;
+
+		if (!getCellIndex(camera, index, pos))
+			return;
+
+		Scene::iterator it = scene.find(index);
+		if (it != scene.end())
+		{
+			scene.erase(it);
+		}
+		
+	}
+
+	bool getCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
+	{
+		pos = floor(camera.Position + camera.Front * 5.0f);
+		const int halfDimension = (1 << 19);
+		if (abs(pos.x) > float(halfDimension) || abs(pos.y) > float(halfDimension) || abs(pos.z) > float(halfDimension))
+			return false;
+
+		uint64 x = pos.x + halfDimension;
+		uint64 y = pos.y + halfDimension;
+		uint64 z = pos.z + halfDimension;
+
+		index = x | (y << 20) | (z << 40);
+
+		return true;
 	}
 
 
@@ -132,9 +161,4 @@ private:
 	Material *groundMaterial;
 	Texture *groundTexture;
 	Mesh* cubeMesh;
-
-	//make material maps and texture sets the same way
-	typedef std::unordered_set<uint64_t> UsedCells;
-	UsedCells usedCells;
-	
 };

@@ -79,9 +79,6 @@ void Window::onPassiveMouseMotion(int x, int y) {
 	app->onPassiveMouseMotion(x, y);
 }
 
-// Later
-//void Window::onMouseWheel(){}
-
 void Window::startMainLoop() {
 	glutDisplayFunc(&Window::onDrawStatic);
 	glutKeyboardFunc(&Window::onKeyDownStatic);

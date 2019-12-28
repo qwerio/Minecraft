@@ -16,10 +16,7 @@
 using namespace std;
 using namespace glm;
 
-Renderer::Renderer()
-{
-
-}
+Renderer::Renderer(){}
 
 void Renderer::onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) {
 
@@ -27,8 +24,8 @@ void Renderer::onRender(const Camera& camera, const RenderSettings& settings, co
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	for (int i = 0; i < scene.size(); i++) {
-		const Node& node = scene[i];
+	for (const auto& pair : scene) {
+		const Node& node = pair.second;
 		//TO DO: Avoid calling it more than once
 		glBindVertexArray(node.mesh->ID);
 
@@ -61,6 +58,7 @@ void Renderer::init() {
 	//shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 	//LoadTexture("C:/Users/ASUS/Desktop/grassBlock.jpg", texturesID[0]);
 
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
