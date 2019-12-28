@@ -16,6 +16,13 @@
 using namespace std;
 using namespace glm;
 
+struct Vertex {
+	vec3 pos;
+	vec3 color;
+	vec2 uv;
+	vec3 normal;
+};
+
 Renderer::Renderer(){}
 
 void Renderer::onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) {
@@ -109,7 +116,7 @@ Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* f
 	
 	Material* material = new Material();
 	materials[material].Load(vertexPath, fragmentPath);
-
+	material->shaderID = materials[material].ID;
 	return material;
 }
 
@@ -185,38 +192,37 @@ Mesh* Renderer::CreateMesh(MeshType type)
 	Mesh* mesh = new Mesh();
 	meshes.insert(mesh);
 
-	GLfloat vertices[] = {
-		//  vertex position      vertex color        tex coords    norm
-		//front side
-		0.0f, 0.0f, 1.0f,	0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	0
-		1.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	2.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, // 	1
-		1.0f, 1.0f, 1.0f,	1.0f, 0.0f, 0.0f,	1.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	2
-		0.0f, 1.0f, 1.0f,	0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, // 	3
-		//right side
-		1.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	2.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	1
-		1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	4
-		1.0f, 1.0f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	5
-		1.0f, 1.0f, 1.0f,	1.0f, 0.0f, 0.0f,	1.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	2
-		//back side
-		1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	4
-		0.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	7
-		0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	6
-		1.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	5
-		//left side
-		0.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //    7
-		0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	0
-		0.0f, 1.0f, 1.0f,   0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	3
-		0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,	1.0f / 3.0f, 0.0f,	0.0f, 0.0f, 0.0f, //    6
-		//top side
-		0.0f,  1.0f, 1.0f,  0.0f, 1.0f, 0.0f,	0.0f, 0.0f,			0.0f, 0.0f, 0.0f, //	3
-		1.0f,  1.0f, 1.0f,  1.0f, 0.0f, 0.0f,	1.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f, //	2
-		1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	5
-		0.0f,  1.0f, 0.0f,  0.0f, 1.0f, 0.0f,	0.0f, 1.0f,         0.0f, 0.0f, 0.0f, //	6
-		//bottom side
-		0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,	1.0f, 0.0f,			0.0f, 0.0f, 0.0f, //	7
-		1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,	1.0f, 1.0f,			0.0f, 0.0f, 0.0f, //	4
-		1.0f, 0.0f, 1.0f,   1.0f, 0.0f, 0.0f,   2.0f / 3.0f, 1.0f,  0.0f, 0.0f, 0.0f, //	1
-		0.0f, 0.0f, 1.0f,   0.0f, 1.0f, 0.0f,	2.0f / 3.0f, 0.0f,  0.0f, 0.0f, 0.0f  //	0
+	Vertex vertices[] = {
+		//front side                                      
+		{ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    0
+		{ vec3(1.0f, 0.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    1
+		{ vec3(1.0f, 1.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    2
+		{ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    3
+		//right side                                                                                         
+		{ vec3(1.0f, 0.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    1
+		{ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    4
+		{ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    5
+		{ vec3(1.0f, 1.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    2
+		//back side                                                                                          
+		{ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    4
+		{ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    7
+		{ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    6
+		{ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    5
+		//left side                                                                                          
+		{ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    7
+		{ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    0
+		{ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    3
+		{ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    6
+		//top side      )                                                                                    
+		{ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(0.0f, 0.0f),        vec3(0.0f, 0.0f, 0.0f) }, //    3
+		{ vec3(1.0f, 1.0f, 1.0f),  vec3(0.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }, //    2
+		{ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    5
+		{ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(0.0f, 1.0f),        vec3(0.0f, 0.0f, 0.0f) }, //    6
+		//bottom side                                                                                        
+		{ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f, 0.0f),        vec3(0.0f, 0.0f, 0.0f) }, //    7
+		{ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f, 1.0f),        vec3(0.0f, 0.0f, 0.0f) }, //    4
+		{ vec3(1.0f, 0.0f, 1.0f),  vec3(0.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }, //    1
+		{ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }  //    0
 	};
 
 	//indexed drawing - we will be using the indices to point to a vertex in the vertices array
@@ -226,12 +232,19 @@ Mesh* Renderer::CreateMesh(MeshType type)
 
 	for (int i = 0; i < size; i += 6) {
 		int offset = (i / 6) * 4;
-		indices[i] = 0 + offset;
+		indices[i + 0] = 0 + offset;
 		indices[i + 1] = 1 + offset;
 		indices[i + 2] = 2 + offset;
 		indices[i + 3] = 0 + offset;
 		indices[i + 4] = 2 + offset;
 		indices[i + 5] = 3 + offset;
+
+		//calculate normals for two triangles
+		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vertices[offset + 0].normal = n0;
+		vertices[offset + 1].normal = n0;
+		vertices[offset + 2].normal = n0;
+		vertices[offset + 3].normal = n0;
 	}
 
 	GLuint VBO, EBO, VAO;
@@ -246,7 +259,7 @@ Mesh* Renderer::CreateMesh(MeshType type)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	const int stride = (3 + 3 + 2 + 3) * sizeof(float); // 3 floats for pos, 3 floats for color, 2 floats for tex coords, 3 floats for normal
+	const int stride = sizeof(Vertex);
 
 	//we have to change the stride to 6 floats, as each vertex now has 6 attribute values
 	//the last value (pointer) is still 0, as the position values start from the beginning
@@ -287,4 +300,11 @@ void Renderer::DestroyMesh(Mesh* mesh)
 		meshes.erase(it);
 	}
 	delete mesh;
+}
+
+vec3 Renderer::ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const
+{
+	vec3 ab = b - a;
+	vec3 ac = c - a;
+	return normalize(cross(ab, ac));
 }

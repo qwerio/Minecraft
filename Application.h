@@ -23,7 +23,7 @@ using namespace glm;
 class Application {
 
 public:
-	Application() : frameIndex(0), height(480), width(640)
+	Application() : frameIndex(0)
 	{
 
 	}
@@ -40,6 +40,7 @@ public:
 	void onDraw() {
 		frameIndex++;
 		// TODO: update scene
+		groundMaterial->setVec3("cameraPos", camera.Position);
 		renderer.onRender(camera, settings, scene, frameIndex);
 	}
 

@@ -54,10 +54,8 @@ public:
 	Mesh* CreateMesh(MeshType type);
 	void DestroyMesh(Mesh* mesh);
 
-	void CreateNode();
-	void DestroyNode();
-
 private:
+	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
 	typedef std::unordered_set<Texture*> Textures;
 	typedef std::unordered_map<Material*, Shader> Materials;
 	typedef std::unordered_set<Mesh*> Meshes;

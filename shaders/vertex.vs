@@ -20,6 +20,6 @@ void main()
 
 	Color = aColor;
 	TexCoord = aTexture;
-	Pos = gl_Position.xyz;
+	Pos = (model * vec4(aPos, 1.0)).xyz;
 	Normal = (model * vec4(aNormal, 0.0)).xyz;
 }

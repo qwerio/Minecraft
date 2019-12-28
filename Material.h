@@ -29,6 +29,13 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(shaderID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 	}
 
+	void setVec3(const std::string& name, const vec3& value)
+	{
+		int location = glGetUniformLocation(shaderID, name.c_str());
+
+		glUniform3fv(glGetUniformLocation(shaderID, name.c_str()), 1, glm::value_ptr(value));
+	}
+
 	//TO DO: add function addTextures;
 	std::vector<Texture*> textures;
 	int shaderID;
