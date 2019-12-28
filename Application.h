@@ -15,7 +15,7 @@ using namespace glm;
 class Application {
 
 public:
-	Application() : frameIndex(0), height(480), width(640){
+	Application() : frameIndex(0), height(480), width(640), lastX(0), lastY(0), firstMouse(true){
 
 	}
 
@@ -26,9 +26,9 @@ public:
 	void onDraw() {
 		frameIndex++;
 		// TODO: update scene
-
 		// TODO: pass scene to renderer
-		renderer.onRender(camera, vec3(0.0f,abs(sin(frameIndex * 0.01f)),1.0f), frameIndex);
+
+		renderer.onRender(camera, settings, frameIndex);
 	}
 
 	void onKeyDown(int key) {
@@ -78,6 +78,7 @@ private:
 	int lastX;
 	int lastY;
 	bool firstMouse = true;
+	RenderSettings settings;
 	Renderer renderer;
 	Camera camera;
 };

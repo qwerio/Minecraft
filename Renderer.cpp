@@ -16,7 +16,9 @@ Renderer::Renderer() : VAO(0), shaderIndex(0) {
 
 }
 
-void Renderer::onRender(const Camera& camera, const vec3& color, int frameIndex) {
+void Renderer::onRender(const Camera& camera, const RenderSettings& settings, int frameIndex) {
+
+	const vec4& color = settings.backGroundColor;
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
