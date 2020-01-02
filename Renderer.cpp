@@ -31,6 +31,7 @@ void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, co
 		glBindVertexArray(node.mesh->ID);
 		//TO DO: Change scene to map<Material*, Nodes> for more efficient rendering
 		Material* material = const_cast<Material*>(node.material);
+		material->SetVec3("cameraPos", camera.Position);
 		Shader& shader = materials[material];
 
 		if(material->isWireFrame)

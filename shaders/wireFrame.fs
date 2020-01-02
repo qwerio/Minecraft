@@ -50,7 +50,5 @@ vec3 srgb_to_rgb(vec3 srgb) {
 void main()
 {
     FragColor = vec4(1.0f, 0.5f, 0.0f, 1.0f);
-    //FragColor = vec4(Pos * 0.5f + 0.5f, 1.0f);
-    //FragColor = vec4(Normal * 0.5f + 0.5f, 1.0f);
     FragColor = vec4(rgb_to_srgb(FragColor.rgb), 1.0);
 }
