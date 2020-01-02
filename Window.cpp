@@ -75,7 +75,7 @@ void Window::OnPassiveMouseMotionStatic(int x, int y)
 void Window::OnDraw() 
 {
 	TimePoint currentTime = std::chrono::steady_clock::now();
-	lastDelta = std::chrono::duration_cast<std::chrono::milliseconds> (currentTime - deltaMarker).count() * 0.001;
+	lastDelta = std::chrono::duration_cast<std::chrono::milliseconds> (currentTime - deltaMarker).count() * 0.001f;
 	deltaMarker = currentTime;
 
 	app->OnDraw(lastDelta);

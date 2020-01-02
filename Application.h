@@ -25,7 +25,7 @@ using namespace glm;
 class Application {
 
 public:
-	Application() : frameIndex(0), lastX(0), lastY(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
+	Application() : frameIndex(0), lastX(0), lastY(0), nextNodeId(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
 
 	void OnInit(const RenderSettings& settings)
 	{	
@@ -100,12 +100,12 @@ public:
 		if (it != sceneLookUp.end())
 			return;
 		
-		//Inserts New Node to the vector and and initialize node
-		scene.push_back(Node());
-		const int sceneIndex = scene.size() - 1;
-		Node& node = scene[sceneIndex];
-		sceneLookUp[cellIndex] = sceneIndex;
-		
+		//Inserts New Node to the set and initialize node
+
+		scene[nextNodeId] = Node(nextNodeId);
+		Node & node = scene[nextNodeId];
+		sceneLookUp[cellIndex] = nextNodeId;
+
 		node.model = mat4(
 			vec4(1.0f, 0.0f, 0.0f, 0.0f),
 			vec4(0.0f, 1.0f, 0.0f, 0.0f),
@@ -114,6 +114,8 @@ public:
 		);
 		node.material = groundMaterial;
 		node.mesh = cubeMesh;
+
+		nextNodeId++;
 	}
 
 	void DestroyNode() 
@@ -127,8 +129,9 @@ public:
 		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
 		if (it != sceneLookUp.end()) 
 		{	
-			scene.erase(scene.begin() + it->second);
+			scene.erase(scene.find(it->second));
 			sceneLookUp.erase(it);
+			
 		}
 	}
 
@@ -152,6 +155,7 @@ private:
 	int frameIndex;
 	int lastX;
 	int lastY;
+	int nextNodeId;
 	bool firstMouse;
 	RenderSettings settings;
 	Renderer renderer;

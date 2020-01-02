@@ -29,7 +29,8 @@ enum class MeshType {
 	CUBE
 };
 
-typedef std::vector<Node> Scene;
+//TO DO: Move scene to diffrent header file
+typedef std::unordered_map<int, Node> Scene;
 
 class Renderer {
 
@@ -62,4 +63,6 @@ private:
 	Meshes meshes;
 	
 	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
+
+
 };
