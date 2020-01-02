@@ -23,45 +23,41 @@ using namespace glm;
 class Application {
 
 public:
-	Application() : frameIndex(0)
-	{
+	Application() : frameIndex(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
 
-	}
-
-	void onInit() 
-	{
-		renderer.init();
+	void OnInit(const RenderSettings& settings)
+	{	
+		this->settings = settings;
+		renderer.Init();
 		groundMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 		groundTexture = renderer.CreateTextureFromFile("C:/Users/ASUS/Desktop/grassBlock.jpg");
 		groundMaterial->textures.push_back(groundTexture);
 		cubeMesh = renderer.CreateMesh(MeshType::CUBE);
 	}
 
-	void onDraw() {
+	void OnDraw(float delta)
+	{
 		frameIndex++;
 		// TODO: update scene
-		groundMaterial->setVec3("cameraPos", camera.Position);
-		renderer.onRender(camera, settings, scene, frameIndex);
+		groundMaterial->SetVec3("cameraPos", camera.Position);
+		renderer.OnRender(camera, settings, scene, frameIndex);
 	}
 
-	void onKeyDown(int key) {
-	
-		switch (key) {
+	void OnKeyDown(int key, float delta) 
+	{
+		switch (key) 
+		{
 		case(GLUT_KEY_UP):
-			camera.ProcessKeyboard(Camera_Movement::FORWARD, 0.016f);
-			std::cout << "UP" << std::endl;
+			camera.ProcessKeyboard(Camera_Movement::FORWARD, delta);
 			break;
 		case(GLUT_KEY_DOWN):
-			camera.ProcessKeyboard(Camera_Movement::BACKWARD, 0.016f);
-			std::cout << "DOWN" << std::endl;
+			camera.ProcessKeyboard(Camera_Movement::BACKWARD, delta);
 			break;
 		case(GLUT_KEY_RIGHT):
-			camera.ProcessKeyboard(Camera_Movement::RIGHT, 0.016f);
-			std::cout << "RIGHT" << std::endl;
+			camera.ProcessKeyboard(Camera_Movement::RIGHT, delta);
 			break;
 		case(GLUT_KEY_LEFT):
-			camera.ProcessKeyboard(Camera_Movement::LEFT, 0.016f);
-			std::cout << "LEFT" << std::endl;
+			camera.ProcessKeyboard(Camera_Movement::LEFT, delta);
 			break;
 		case(GLUT_KEY_F1):
 			CreateNode();
@@ -72,7 +68,9 @@ public:
 		}
 
 	}
-	void onPassiveMouseMotion(int x, int y) {
+
+	void OnPassiveMouseMotion(int x, int y) 
+	{
 		if (firstMouse)
 		{
 			lastX = x;
@@ -81,7 +79,7 @@ public:
 		}
 		else
 		{
-			camera.ProcessMouseMovement(x - lastX, lastY - y);
+			camera.ProcessMouseMovement(float(x - lastX), float(lastY - y));
 			lastX = x;
 			lastY = y;
 		}
@@ -91,7 +89,7 @@ public:
 	{
 		uint64_t index;
 		vec3 pos;
-		if (!getCellIndex(camera, index, pos))
+		if (!GetCellIndex(camera, index, pos))
 			return;
 
 		Scene::iterator it = scene.find(index);
@@ -117,49 +115,40 @@ public:
 		uint64_t index;
 		vec3 pos;
 
-		if (!getCellIndex(camera, index, pos))
+		if (!GetCellIndex(camera, index, pos))
 			return;
 
 		Scene::iterator it = scene.find(index);
 		if (it != scene.end())
-		{
 			scene.erase(it);
-		}
-		
 	}
 
-	bool getCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
+	bool GetCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
 	{
 		pos = floor(camera.Position + camera.Front * 5.0f);
 		const int halfDimension = (1 << 19);
 		if (abs(pos.x) > float(halfDimension) || abs(pos.y) > float(halfDimension) || abs(pos.z) > float(halfDimension))
 			return false;
 
-		uint64 x = pos.x + halfDimension;
-		uint64 y = pos.y + halfDimension;
-		uint64 z = pos.z + halfDimension;
+		uint64 x = uint64(pos.x) + halfDimension;
+		uint64 y = uint64(pos.y) + halfDimension;
+		uint64 z = uint64(pos.z) + halfDimension;
 
 		index = x | (y << 20) | (z << 40);
 
 		return true;
 	}
 
-
-	//TO DO: Later
-	//void onMouseWheel() {}
-
 private:
-	int height;
-	int width;
 	int frameIndex;
 	int lastX;
 	int lastY;
-	bool firstMouse = true;
+	bool firstMouse;
 	RenderSettings settings;
 	Renderer renderer;
 	Camera camera;
 	Scene scene;
-	Material *groundMaterial;
-	Texture *groundTexture;
+	Material* groundMaterial;
+	Texture* groundTexture;
 	Mesh* cubeMesh;
 };

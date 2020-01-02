@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <vector>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 using namespace glm;
@@ -16,6 +17,7 @@ enum Camera_Movement {
 	LEFT,
 	RIGHT
 };
+
 
 // Default camera values
 const float YAW = -90.0f;
@@ -71,8 +73,7 @@ public:
 
 	glm::mat4 GetProjMatrix(int width, int height) const
 	{	
-		//TODO: use PI
-		return glm::perspective(3.1415f/4.0f, (float)width / (float)height, 0.01f, 1000.0f);
+		return glm::perspective(float(M_PI_4), (float)width / (float)height, 0.01f, 1000.0f);
 	}
 	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
 	

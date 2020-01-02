@@ -25,28 +25,28 @@ struct Vertex {
 
 Renderer::Renderer(){}
 
-void Renderer::onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) {
-
+void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) 
+{
 	const vec4& color = settings.backGroundColor;
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	for (const auto& pair : scene) {
+
+	for (const auto& pair : scene) 
+	{
 		const Node& node = pair.second;
 		//TO DO: Avoid calling it more than once
 		glBindVertexArray(node.mesh->ID);
-
 		//TO DO: Change scene to map<Material*, Nodes> for more efficient rendering
 		Material* material = const_cast<Material*>(node.material);
 		Shader& shader = materials[material];
-		shader.use();
-		shader.setInt("Texture1", 0); // TODO: move to texture loop (need to use either stringstream or sprintf)
-		shader.setMat4("model", node.model);
-		shader.setMat4("view", camera.GetViewMatrix());
-		//TO DO: Get width and height from parameters, from redersettings
-		shader.setMat4("proj", camera.GetProjMatrix(640, 480));
+		shader.Use();
+		shader.SetInt("Texture1", 0); // TODO: move to texture loop (need to use either stringstream or sprintf)
+		shader.SetMat4("model", node.model);
+		shader.SetMat4("view", camera.GetViewMatrix());
+		shader.SetMat4("proj", camera.GetProjMatrix(settings.width, settings.height));
 
-		for (int j = 0; j < material->textures.size(); j++) {
+		for (int j = 0; j < material->textures.size(); j++) 
+		{
 			glActiveTexture(GL_TEXTURE0 + j);
 			glBindTexture(GL_TEXTURE_2D, material->textures[j]->ID);
 		}
@@ -56,14 +56,10 @@ void Renderer::onRender(const Camera& camera, const RenderSettings& settings, co
 	
 }
 
-void Renderer::init() {
-	if (glewInit()) {
+void Renderer::Init() 
+{
+	if (glewInit())
 		std::cout << "Failed to initialize GLEW" << std::endl;
-	}
-
-	//texturesID.resize(1);
-	//shader.Load("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
-	//LoadTexture("C:/Users/ASUS/Desktop/grassBlock.jpg", texturesID[0]);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -111,7 +107,8 @@ bool Renderer::LoadTexture(const char* filename, GLuint& texID)
 	return true;
 }
 
-Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath) {
+Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath)
+{
 	//TO DO: Move everything from shader.h to render.h 
 	
 	Material* material = new Material();
@@ -185,9 +182,7 @@ void Renderer::DestroyTexture(Texture* texture)
 Mesh* Renderer::CreateMesh(MeshType type) 
 {
 	if (type != MeshType::CUBE)
-	{
 		return nullptr;
-	}
 
 	Mesh* mesh = new Mesh();
 	meshes.insert(mesh);
@@ -230,7 +225,8 @@ Mesh* Renderer::CreateMesh(MeshType type)
 
 	GLuint indices[size] = {};
 
-	for (int i = 0; i < size; i += 6) {
+	for (int i = 0; i < size; i += 6) 
+	{
 		int offset = (i / 6) * 4;
 		indices[i + 0] = 0 + offset;
 		indices[i + 1] = 1 + offset;

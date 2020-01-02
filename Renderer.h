@@ -8,12 +8,9 @@
 #include "Shader.h"
 #include "Node.h"
 
-
 #include <glm/vec3.hpp>
 
-
 using namespace glm;
-
 
 //forward class declarations
 class Camera;
@@ -21,7 +18,6 @@ class Material;
 class Texture;
 class Mesh;
 
-//add width and height to the struct
 struct RenderSettings{
 	vec4 backGroundColor;
 	int width;
@@ -41,9 +37,9 @@ public:
 
 	Renderer();
 
-	void onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex);
+	void OnRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex);
 
-	void init();
+	void Init();
 
 	bool LoadTexture(const char* filename, GLuint& texID);
 
@@ -57,11 +53,12 @@ public:
 	void DestroyMesh(Mesh* mesh);
 
 private:
-	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
 	typedef std::unordered_set<Texture*> Textures;
 	typedef std::unordered_map<Material*, Shader> Materials;
 	typedef std::unordered_set<Mesh*> Meshes;
 	Textures textures;
 	Materials materials;
 	Meshes meshes;
+	
+	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
 };

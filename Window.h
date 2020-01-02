@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <chrono>
 
 #include "Application.h"
 
@@ -13,23 +14,26 @@ class Window;
 
 class Window {
 private:
+	typedef std::chrono::steady_clock::time_point TimePoint;
+
 	int id;
+	float lastDelta;
+	TimePoint deltaMarker;
 	Application* app;
 	
 public:
 	Window();
-
-	static void apiInit(int argc, char** argv);
-	void init(const std::string& title, int width, int height, Application* app);
-
-	static void onDrawStatic();
-	static void onKeyDownStatic(unsigned char key, int x, int y);
-	static void onKeyDownSpecialStatic(int key, int x, int y);
-	static void onPassiveMouseMotionStatic(int x, int y);
-
-	void onDraw();
-	void onKeyDown(int key);
-	void onPassiveMouseMotion(int x, int t);
+	void Init(const std::string& title, const RenderSettings& settings, Application* app);
 	
-	void startMainLoop();
+	static void ApiInit(int argc, char** argv);
+	static void OnDrawStatic();
+	static void OnKeyDownStatic(unsigned char key, int x, int y);
+	static void OnKeyDownSpecialStatic(int key, int x, int y);
+	static void OnPassiveMouseMotionStatic(int x, int y);
+
+	void OnDraw();
+	void OnKeyDown(int key);
+	void OnPassiveMouseMotion(int x, int t);
+	
+	void StartMainLoop();
 };
