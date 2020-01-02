@@ -19,6 +19,7 @@ class Texture;
 class Mesh;
 
 struct RenderSettings{
+	RenderSettings() : backGroundColor(0.0f, 0.0f, 0.0f, 0.0f), width(0), height(0) {};
 	vec4 backGroundColor;
 	int width;
 	int height;
@@ -28,7 +29,7 @@ enum class MeshType {
 	CUBE
 };
 
-typedef std::unordered_map<uint64_t, Node> Scene;
+typedef std::vector<Node> Scene;
 
 class Renderer {
 

@@ -9,6 +9,8 @@
 #include "Material.h"
 
 #include <glm/vec3.hpp>
+#include <vector>
+#include <unordered_map>
 
 #include <GL\freeglut.h>
 
@@ -18,15 +20,16 @@ using namespace glm;
 /*TO DO: Add storing and loading functionality
 		list of the nodes
 		their materials
-		camera postiont
+		camera postions
 */
 class Application {
 
 public:
-	Application() : frameIndex(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
+	Application() : frameIndex(0), lastX(0), lastY(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
 
 	void OnInit(const RenderSettings& settings)
 	{	
+
 		this->settings = settings;
 		renderer.Init();
 		groundMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
@@ -87,40 +90,46 @@ public:
 
 	void CreateNode()
 	{
-		uint64_t index;
+		uint64_t cellIndex;
 		vec3 pos;
-		if (!GetCellIndex(camera, index, pos))
+
+		if (!GetCellIndex(camera, cellIndex, pos))
 			return;
 
-		Scene::iterator it = scene.find(index);
-		if (it != scene.end())
+		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
+		if (it != sceneLookUp.end())
 			return;
 		
-		//Insert Node to the Scene
-		Node& node = scene[index];
-
+		//Inserts New Node to the vector and and initialize node
+		scene.push_back(Node());
+		const int sceneIndex = scene.size() - 1;
+		Node& node = scene[sceneIndex];
+		sceneLookUp[cellIndex] = sceneIndex;
+		
 		node.model = mat4(
 			vec4(1.0f, 0.0f, 0.0f, 0.0f),
 			vec4(0.0f, 1.0f, 0.0f, 0.0f),
 			vec4(0.0f, 0.0f, 1.0f, 0.0f),
 			vec4(pos.x, pos.y, pos.z, 1.0f)
 		);
-
 		node.material = groundMaterial;
 		node.mesh = cubeMesh;
 	}
 
 	void DestroyNode() 
 	{
-		uint64_t index;
+		uint64_t cellIndex;
 		vec3 pos;
 
-		if (!GetCellIndex(camera, index, pos))
+		if (!GetCellIndex(camera, cellIndex, pos))
 			return;
 
-		Scene::iterator it = scene.find(index);
-		if (it != scene.end())
-			scene.erase(it);
+		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
+		if (it != sceneLookUp.end()) 
+		{	
+			scene.erase(scene.begin() + it->second);
+			sceneLookUp.erase(it);
+		}
 	}
 
 	bool GetCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
@@ -151,4 +160,7 @@ private:
 	Material* groundMaterial;
 	Texture* groundTexture;
 	Mesh* cubeMesh;
+	//sceneLookUp - map between cube postion and index in the scene array
+	typedef std::unordered_map<uint64, int> SceneLookUp;
+	SceneLookUp sceneLookUp;
 };

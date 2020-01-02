@@ -31,16 +31,15 @@ void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, co
 	glClearColor(color.x, color.y, color.z, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (const auto& pair : scene) 
+	for (const Node& node : scene) 
 	{
-		const Node& node = pair.second;
 		//TO DO: Avoid calling it more than once
 		glBindVertexArray(node.mesh->ID);
 		//TO DO: Change scene to map<Material*, Nodes> for more efficient rendering
 		Material* material = const_cast<Material*>(node.material);
 		Shader& shader = materials[material];
 		shader.Use();
-		shader.SetInt("Texture1", 0); // TODO: move to texture loop (need to use either stringstream or sprintf)
+		shader.SetInt("Texture1", 0); // TO DO: move to texture loop (need to use either stringstream or sprintf)
 		shader.SetMat4("model", node.model);
 		shader.SetMat4("view", camera.GetViewMatrix());
 		shader.SetMat4("proj", camera.GetProjMatrix(settings.width, settings.height));
