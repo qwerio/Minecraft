@@ -25,8 +25,16 @@ struct RenderSettings{
 	int height;
 };
 
+struct Vertex {
+	vec3 pos;
+	vec3 color;
+	vec2 uv;
+	vec3 normal;
+};
+
 enum class MeshType {
-	CUBE
+	CUBE,
+	WIREFRAMECUBE
 };
 
 //TO DO: Move scene to diffrent header file
@@ -63,6 +71,11 @@ private:
 	Meshes meshes;
 	
 	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
+
+	typedef std::vector<Vertex> Vertices;
+	typedef std::vector<int> Indices;
+
+	void createCube(Vertices& vertices, Indices& indices) const;
 
 
 };

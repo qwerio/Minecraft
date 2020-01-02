@@ -50,6 +50,7 @@ add_executable(
     Shader.h
     shaders/vertex.vs
     shaders/fragment.fs
+    shaders/wireFrame.fs
     stb_image.h
     Material.h
     Node.h

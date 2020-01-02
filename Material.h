@@ -12,6 +12,8 @@ class Texture;
 
 class Material {
 public:
+	Material() : shaderID(0), isWireFrame(false) {}
+
 	void SetBool(const std::string& name, bool value)
 	{
 		glUniform1i(glGetUniformLocation(shaderID, name.c_str()), (int)value);
@@ -41,4 +43,5 @@ public:
 	//TO DO: add function addTextures;
 	std::vector<Texture*> textures;
 	int shaderID;
+	bool isWireFrame;
 };
