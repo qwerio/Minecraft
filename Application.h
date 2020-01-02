@@ -37,14 +37,14 @@ public:
 		groundMaterial->textures.push_back(groundTexture);
 		cubeMesh = renderer.CreateMesh(MeshType::CUBE);
 
-		Material* wireFrameMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/wireFrame.fs");;
-		wireFrameMaterial->isWireFrame = true;
+		Material* wireFrameMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/wireFrame.fs");
 		scene[nextNodeId] = Node(nextNodeId);
 		Node& node = scene[nextNodeId];
+		Mesh* cubeWireframeMesh = renderer.CreateMesh(MeshType::WIREFRAMECUBE);
 		wireFrameCube = &node;
 		wireFrameCube->id = nextNodeId;
 		wireFrameCube->material = wireFrameMaterial;
-		wireFrameCube->mesh = cubeMesh;
+		wireFrameCube->mesh = cubeWireframeMesh;
 
 		nextNodeId++;
 

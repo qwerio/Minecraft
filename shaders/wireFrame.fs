@@ -49,17 +49,7 @@ vec3 srgb_to_rgb(vec3 srgb) {
 
 void main()
 {
-    // point light
-    vec3 lightPos = vec3(cameraPos);
-    vec3 lightDir = lightPos - Pos;
-    float lightDistSquared = dot(lightDir, lightDir);
-    float lightIntensity = 5.0 / lightDistSquared;
-    lightDir /= sqrt(lightDistSquared);
-
-    // vec3 lightDir = normalize(vec3(1.0)); // directional light
-    // float lightIntensity = 1.0;
-    float lighting = dot(normalize(Normal), lightDir) * lightIntensity;
-    FragColor = texture(Texture1, TexCoord) * lighting * 0.1f;
+    FragColor = vec4(1.0f, 0.5f, 0.0f, 1.0f);
     //FragColor = vec4(Pos * 0.5f + 0.5f, 1.0f);
     //FragColor = vec4(Normal * 0.5f + 0.5f, 1.0f);
     FragColor = vec4(rgb_to_srgb(FragColor.rgb), 1.0);

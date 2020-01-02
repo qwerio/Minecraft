@@ -48,7 +48,21 @@ void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, co
 			glBindTexture(GL_TEXTURE_2D, material->textures[j]->ID);
 		}
 
-		glDrawElements(GL_TRIANGLES, node.mesh->vertexCount, GL_UNSIGNED_INT, 0);
+		int drawMode;
+		switch (node.mesh->drawMode)
+		{
+			case(Mesh::DrawMode::LINES):
+				drawMode = GL_LINES;
+				break;
+			case(Mesh::DrawMode::TRIANGLES):
+				drawMode = GL_TRIANGLES;
+				break;
+			default:
+				drawMode = GL_POINTS;
+				break;
+		}
+
+		glDrawElements(drawMode, node.mesh->vertexCount, GL_UNSIGNED_INT, 0);
 
 		if(material->isWireFrame)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -183,19 +197,23 @@ Mesh* Renderer::CreateMesh(MeshType type)
 {
 	Vertices vertices;
 	Indices indices;
-		
+	Mesh::DrawMode drawMode;
+
 	switch (type) {
 		case(MeshType::CUBE):
+			drawMode = Mesh::DrawMode::TRIANGLES;
 			createCube(vertices, indices);
 			break;
 		case(MeshType::WIREFRAMECUBE):
-			createCube(vertices, indices);
+			drawMode = Mesh::DrawMode::LINES;
+			createWireframeCube(vertices, indices);
 			break;
 		default:
 			return nullptr;
 	}
 
 	Mesh* mesh = new Mesh();
+	mesh->drawMode = drawMode;
 	meshes.insert(mesh);
 
 	GLuint VBO, EBO, VAO;
@@ -304,6 +322,64 @@ void  Renderer::createCube(Vertices& vertices, Indices& indices) const
 		indices[i + 3] = 0 + offset;
 		indices[i + 4] = 2 + offset;
 		indices[i + 5] = 3 + offset;
+
+		//calculate normals for two triangles
+		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vertices[offset + 0].normal = n0;
+		vertices[offset + 1].normal = n0;
+		vertices[offset + 2].normal = n0;
+		vertices[offset + 3].normal = n0;
+	}
+}
+
+void Renderer::createWireframeCube(Vertices& vertices, Indices& indices) const
+{
+	// TODO: reuse vertices from createCube()
+	//TO DO: use resize() instead of push_back()
+	vertices.push_back({ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    0
+	vertices.push_back({ vec3(1.0f, 0.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    1
+	vertices.push_back({ vec3(1.0f, 1.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    2
+	vertices.push_back({ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    3
+
+	vertices.push_back({ vec3(1.0f, 0.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    1
+	vertices.push_back({ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    4
+	vertices.push_back({ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    5
+	vertices.push_back({ vec3(1.0f, 1.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    2
+
+	vertices.push_back({ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    4
+	vertices.push_back({ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    7
+	vertices.push_back({ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    6
+	vertices.push_back({ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    5
+
+	vertices.push_back({ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    7
+	vertices.push_back({ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    0
+	vertices.push_back({ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    3
+	vertices.push_back({ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    6
+
+	vertices.push_back({ vec3(0.0f, 1.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(0.0f, 0.0f),        vec3(0.0f, 0.0f, 0.0f) }); //    3
+	vertices.push_back({ vec3(1.0f, 1.0f, 1.0f),  vec3(0.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    2
+	vertices.push_back({ vec3(1.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    5
+	vertices.push_back({ vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(0.0f, 1.0f),        vec3(0.0f, 0.0f, 0.0f) }); //    6
+
+	vertices.push_back({ vec3(0.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f, 0.0f),        vec3(0.0f, 0.0f, 0.0f) }); //    7
+	vertices.push_back({ vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f, 1.0f),        vec3(0.0f, 0.0f, 0.0f) }); //    4
+	vertices.push_back({ vec3(1.0f, 0.0f, 1.0f),  vec3(0.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    1
+	vertices.push_back({ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    0
+
+	//indexed drawing - we will be using the indices to point to a vertex in the vertices array
+	const int size = 12 * 4;
+	indices.resize(size);
+	for (int i = 0; i < size; i += 8)
+	{
+		int offset = (i / 8) * 4;
+		indices[i + 0] = 0 + offset;
+		indices[i + 1] = 1 + offset;
+		indices[i + 2] = 1 + offset;
+		indices[i + 3] = 2 + offset;
+		indices[i + 4] = 2 + offset;
+		indices[i + 5] = 3 + offset;
+		indices[i + 6] = 3 + offset;
+		indices[i + 7] = 0 + offset;
 
 		//calculate normals for two triangles
 		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);

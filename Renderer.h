@@ -76,6 +76,7 @@ private:
 	typedef std::vector<int> Indices;
 
 	void createCube(Vertices& vertices, Indices& indices) const;
+	void createWireframeCube(Vertices& vertices, Indices& indices) const;
 
 
 };
