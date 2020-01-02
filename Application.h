@@ -25,23 +25,47 @@ using namespace glm;
 class Application {
 
 public:
-	Application() : frameIndex(0), lastX(0), lastY(0), nextNodeId(0), firstMouse(true), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
+	Application() : frameIndex(0), lastX(0), lastY(0), nextNodeId(0), firstMouse(true), wireFrameCube(nullptr), groundMaterial(nullptr), groundTexture(nullptr), cubeMesh(nullptr) {}
 
 	void OnInit(const RenderSettings& settings)
 	{	
-
 		this->settings = settings;
+
 		renderer.Init();
 		groundMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 		groundTexture = renderer.CreateTextureFromFile("C:/Users/ASUS/Desktop/grassBlock.jpg");
 		groundMaterial->textures.push_back(groundTexture);
 		cubeMesh = renderer.CreateMesh(MeshType::CUBE);
+
+		scene[nextNodeId] = Node(nextNodeId);
+		Node& node = scene[nextNodeId];
+		wireFrameCube = &node;
+		wireFrameCube->id = nextNodeId;
+		wireFrameCube->material = groundMaterial;
+		wireFrameCube->mesh = cubeMesh;
+
+		nextNodeId++;
+
 	}
 
 	void OnDraw(float delta)
 	{
 		frameIndex++;
 		// TODO: update scene
+
+		uint64_t cellIndex;
+		vec3 pos;
+
+		if (!GetCellIndex(camera, cellIndex, pos))
+			return;
+
+		wireFrameCube->model = mat4(
+			vec4(1.0f, 0.0f, 0.0f, 0.0f),
+			vec4(0.0f, 1.0f, 0.0f, 0.0f),
+			vec4(0.0f, 0.0f, 1.0f, 0.0f),
+			vec4(pos.x, pos.y, pos.z, 1.0f)
+		);
+
 		groundMaterial->SetVec3("cameraPos", camera.Position);
 		renderer.OnRender(camera, settings, scene, frameIndex);
 	}
@@ -101,7 +125,6 @@ public:
 			return;
 		
 		//Inserts New Node to the set and initialize node
-
 		scene[nextNodeId] = Node(nextNodeId);
 		Node & node = scene[nextNodeId];
 		sceneLookUp[cellIndex] = nextNodeId;
@@ -161,6 +184,7 @@ private:
 	Renderer renderer;
 	Camera camera;
 	Scene scene;
+	Node* wireFrameCube;
 	Material* groundMaterial;
 	Texture* groundTexture;
 	Mesh* cubeMesh;
