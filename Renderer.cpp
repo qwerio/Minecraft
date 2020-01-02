@@ -209,6 +209,10 @@ Mesh* Renderer::CreateMesh(MeshType type)
 			drawMode = Mesh::DrawMode::LINES;
 			createWireframeCube(vertices, indices);
 			break;
+		case(MeshType::PLANE):
+			drawMode = Mesh::DrawMode::TRIANGLES;
+			createPlane(vertices, indices);
+			break;
 		default:
 			return nullptr;
 	}
@@ -381,6 +385,34 @@ void Renderer::createWireframeCube(Vertices& vertices, Indices& indices) const
 		indices[i + 5] = 3 + offset;
 		indices[i + 6] = 3 + offset;
 		indices[i + 7] = 0 + offset;
+
+		//calculate normals for two triangles
+		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vertices[offset + 0].normal = n0;
+		vertices[offset + 1].normal = n0;
+		vertices[offset + 2].normal = n0;
+		vertices[offset + 3].normal = n0;
+	}
+}
+
+void Renderer::createPlane(Vertices& vertices, Indices& indices) const
+{
+	vertices.push_back({ vec3(0.0f, 0.0f, -1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    0
+	vertices.push_back({ vec3(1.0f, 0.0f, -1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    1
+	vertices.push_back({ vec3(1.0f, 1.0f, -1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    2
+	vertices.push_back({ vec3(0.0f, 1.0f, -1.00f), vec3(0.0f, 1.0f, 0.0f),    vec2(1.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    3
+
+	const int size = 2 * 3;
+	indices.resize(size);
+	for (int i = 0; i < size; i += 6)
+	{
+		int offset = (i / 6) * 4;
+		indices[i + 0] = 0 + offset;
+		indices[i + 1] = 1 + offset;
+		indices[i + 2] = 2 + offset;
+		indices[i + 3] = 0 + offset;
+		indices[i + 4] = 2 + offset;
+		indices[i + 5] = 3 + offset;
 
 		//calculate normals for two triangles
 		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);

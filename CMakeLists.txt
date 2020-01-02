@@ -51,6 +51,8 @@ add_executable(
     shaders/vertex.vs
     shaders/fragment.fs
     shaders/wireFrame.fs
+    shaders/screenPlane.vs
+    shaders/screenPlane.fs
     stb_image.h
     Material.h
     Node.h

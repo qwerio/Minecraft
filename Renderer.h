@@ -34,7 +34,8 @@ struct Vertex {
 
 enum class MeshType {
 	CUBE,
-	WIREFRAMECUBE
+	WIREFRAMECUBE,
+	PLANE
 };
 
 //TO DO: Move scene to diffrent header file
@@ -77,6 +78,7 @@ private:
 
 	void createCube(Vertices& vertices, Indices& indices) const;
 	void createWireframeCube(Vertices& vertices, Indices& indices) const;
+	void createPlane(Vertices& vertices, Indices& indices) const;
 
 
 };

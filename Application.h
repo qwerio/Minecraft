@@ -56,12 +56,37 @@ public:
 
 		Material* wireFrameMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/wireFrame.fs");
 		scene[nextNodeId] = Node(nextNodeId);
-		Node& node = scene[nextNodeId];
 		Mesh* cubeWireframeMesh = renderer.CreateMesh(MeshType::WIREFRAMECUBE);
-		wireFrameCube = &node;
+		wireFrameCube = &scene[nextNodeId];
 		wireFrameCube->id = nextNodeId;
 		wireFrameCube->material = wireFrameMaterial;
 		wireFrameCube->mesh = cubeWireframeMesh;
+		nextNodeId++;
+
+		
+		Material* materialPreviewMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.fs");
+		materialPreviewMaterial->textures.push_back(groundMaterials[currentGroundMaterial]->textures[0]);
+		scene[nextNodeId] = Node(nextNodeId);
+		Mesh* materialPreviewMesh = renderer.CreateMesh(MeshType::PLANE);
+		materialPreviewNode = &scene[nextNodeId];
+		materialPreviewNode->id = nextNodeId;
+		materialPreviewNode->material = materialPreviewMaterial;
+		materialPreviewNode->mesh = materialPreviewMesh;
+		float aspectRatio = float(settings.width) / settings.height;
+
+		mat4 translation = mat4(
+			vec4(1.0f, 0.0f, 0.0f, 0.0f),
+			vec4(0.0f, 1.0f, 0.0f, 0.0f),
+			vec4(0.0f, 0.0f, 1.0f, 0.0f),
+			vec4(-1.0f, 0.75f, 0.0f, 1.0f)
+		);
+
+		materialPreviewNode->model = translation * mat4(
+			vec4(0.25f / aspectRatio, 0.0f, 0.0f, 0.0f),
+			vec4(0.0f, 0.25f, 0.0f, 0.0f),
+			vec4(0.0f, 0.0f, 1.0f, 0.0f),
+			vec4(0.0f, 0.0, 0.0f, 1.0f)
+		);
 
 		nextNodeId++;
 
@@ -114,11 +139,13 @@ public:
 			currentGroundMaterial++;
 			if (currentGroundMaterial >= groundMaterials.size())
 				currentGroundMaterial -= groundMaterials.size();
+			materialPreviewNode->material->textures[0] = groundMaterials[currentGroundMaterial]->textures[0];
 			break;
 		case(GLUT_KEY_F8):
 			currentGroundMaterial--;
 			if (currentGroundMaterial < 0)
 				currentGroundMaterial += groundMaterials.size();
+			materialPreviewNode->material->textures[0] = groundMaterials[currentGroundMaterial]->textures[0];
 			break;
 		}
 
@@ -214,6 +241,7 @@ private:
 	Camera camera;
 	Scene scene;
 	Node* wireFrameCube;
+	Node* materialPreviewNode;
 	Texture* groundTexture;
 	Mesh* cubeMesh;
 	//sceneLookUp - map between cube postion and index in the scene array
