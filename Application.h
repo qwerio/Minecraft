@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <stdlib.h>
 
 #include "Renderer.h"
 #include "Camera.h"
@@ -110,6 +111,7 @@ public:
 			vec4(pos.x, pos.y, pos.z, 1.0f)
 		);
 
+		updateDestructionAnimations(delta);
 		renderer.OnRender(camera, settings, scene, frameIndex);
 	}
 
@@ -196,7 +198,7 @@ public:
 		nextNodeId++;
 	}
 
-	void DestroyNode() 
+	void DestroyNode()
 	{
 		uint64_t cellIndex;
 		vec3 pos;
@@ -205,12 +207,16 @@ public:
 			return;
 
 		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
-		if (it != sceneLookUp.end()) 
-		{	
-			scene.erase(scene.find(it->second));
+
+		if (it != sceneLookUp.end())
+		{
+			Scene::iterator nodeIterator = scene.find(it->second);
+			startDestructionAnimation(pos, nodeIterator->second.material);
+			scene.erase(nodeIterator);
 			sceneLookUp.erase(it);
-			
+
 		}
+		
 	}
 
 	bool GetCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
@@ -228,6 +234,79 @@ public:
 
 		return true;
 	}
+
+	void startDestructionAnimation(const vec3& pos, Material* material)
+	{
+		const int subdivisions = 9;
+		const int elementsCount = subdivisions * subdivisions * subdivisions;
+		const float scale = 1.0f / subdivisions;
+		DestructionAnimationNodes nodes;
+		nodes.resize(elementsCount);
+		for (int z = 0; z < subdivisions; z++)
+		{
+			for (int y = 0; y < subdivisions; y++)
+			{
+				for (int x = 0; x < subdivisions; x++)
+				{
+					scene[nextNodeId] = Node(nextNodeId);
+					Node* node = &scene[nextNodeId];
+					node->id = nextNodeId;
+					node->material = material;
+					node->mesh = cubeMesh;
+					mat4 translation = mat4(
+						vec4(1.0f, 0.0f, 0.0f, 0.0f),
+						vec4(0.0f, 1.0f, 0.0f, 0.0f),
+						vec4(0.0f, 0.0f, 1.0f, 0.0f),
+						vec4(pos.x + scale * x, pos.y + scale * y, pos.z + scale * z, 1.0f)
+					);
+					node->model = translation * mat4(
+						vec4(scale, 0.0f, 0.0f, 0.0f),
+						vec4(0.0f, scale, 0.0f, 0.0f),
+						vec4(0.0f, 0.0f, scale, 0.0f),
+						vec4(0.0f, 0.0f, 0.0f, 1.0f)
+					);
+
+					nextNodeId++;
+
+					float r0 = (rand() % 100) * 0.02f - 1.0f;
+					float r1 = (rand() % 100) * 0.02f - 1.0f;
+					const int index = (z * subdivisions + y) * subdivisions + x;
+					DestructionAnimationNode& animationNode = nodes[index];
+					animationNode.node = node;
+					animationNode.duration = 2.0f;
+					animationNode.direction = normalize(vec3(r0, 100.0f, r1));
+				}
+			}
+		}
+
+		destructionAnimations.push_back(nodes);
+	}
+
+	void endDestructionAnimation(int& index)
+	{
+		for (const DestructionAnimationNode& node : destructionAnimations[index])
+		{
+			scene.erase(scene.find(node.node->id));
+		}
+		destructionAnimations.erase(destructionAnimations.begin() + index);
+		index--;
+	}
+
+	void updateDestructionAnimations(float deltaTime)
+	{
+		for (int i = 0; i < destructionAnimations.size(); i++)
+		{
+			DestructionAnimationNodes& nodes = destructionAnimations[i];
+			bool finished = false;
+			for (DestructionAnimationNode& node : nodes)
+			{
+				node.update(deltaTime, finished);
+			}
+			if (finished)
+				endDestructionAnimation(i);				
+		}
+	}
+
 
 private:
 	int frameIndex;
@@ -249,4 +328,44 @@ private:
 	typedef std::vector<Material*> GroundMaterials;
 	SceneLookUp sceneLookUp;
 	GroundMaterials groundMaterials;
+
+
+	struct DestructionAnimationNode {
+		DestructionAnimationNode() : node(nullptr), duration(0), currentTime(0), velocity(0), direction(0.0f) {}
+		Node* node;
+		float duration;
+		float currentTime;
+		float velocity;
+		vec3 direction;
+		
+
+		void update(float deltaTime, bool& finished)
+		{
+			currentTime += deltaTime;
+			if (currentTime >= duration)
+			{
+				finished = true;
+				return;
+			}
+			else
+			{
+				finished = false;
+			}
+
+			const vec3 gravity = vec3(0.0f, -9.8f, 0.0f);
+			const float velocity = 10.0f;
+			vec3 offset = (direction * velocity + gravity) * deltaTime;
+			node->model += mat4(
+				vec4(0.0f, 0.0f, 0.0f, 0.0f),
+				vec4(0.0f, 0.0f, 0.0f, 0.0f),
+				vec4(0.0f, 0.0f, 0.0f, 0.0f),
+				vec4(offset.x, offset.y, offset.z, 0.0f)
+			);
+
+		}
+	};
+
+	typedef std::vector<DestructionAnimationNode> DestructionAnimationNodes;
+	typedef std::vector<DestructionAnimationNodes> DestructionAnimations;
+	DestructionAnimations destructionAnimations;
 };

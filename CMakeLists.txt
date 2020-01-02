@@ -59,6 +59,7 @@ add_executable(
     Camera.h
     Texture.h
     Mesh.h
+    Animation.h
 )
 
 #target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main)
