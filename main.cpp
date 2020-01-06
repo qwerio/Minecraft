@@ -8,7 +8,7 @@ using namespace glm;
 
 int main(int argc, char** argv)
 {
-	Window::ApiInit(argc, argv);
+	Window::apiInit(argc, argv);
 
 	Window window;
 	Application app;
@@ -21,8 +21,8 @@ int main(int argc, char** argv)
 	settings.backGroundColor.z = 0.9f;
 	settings.backGroundColor.w = 1.0f;
 
-	window.Init("Minecraft", settings, &app);
-	window.StartMainLoop();
+	window.init("Minecraft", settings, &app);
+	window.startMainLoop();
 
 	return 0;
 }

@@ -10,94 +10,94 @@ Window::Window() : id(-1), lastDelta(0), deltaMarker(std::chrono::steady_clock::
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE); //give main window settings - GLUT_DOUBLE - use double buffering
 }
 
-void Window::ApiInit(int argc, char** argv) 
+void Window::apiInit(int argc, char** argv) 
 {
 	glutInit(&argc, argv); //pass command line options for glut 
 }
 
-void Window::Init(const std::string& title, const RenderSettings& settings, Application* app)
+void Window::init(const std::string& title, const RenderSettings& settings, Application* app)
 {
 	glutInitWindowSize(settings.width, settings.height); // set window size when not in fullscreen
 	id = glutCreateWindow(title.c_str()); //create the main window and specify title
 	this->app = app;
-	app->OnInit(settings);
+	app->onInit(settings);
 	windows[id] = this;
 }
 
-void Window::OnDrawStatic() 
+void Window::onDrawStatic() 
 {
 	int id = glutGetWindow();
 	Window* window = windows[id];
 	if (window) {
-		window->OnDraw();
+		window->onDraw();
 	}
 	else {
 		std::cout << "Error Window Loading" << std::endl;
 	}
 }
 
-void Window::OnKeyDownSpecialStatic(int key, int x, int y) 
+void Window::onKeyDownSpecialStatic(int key, int x, int y) 
 {
 	int id = glutGetWindow();
 	Window* window = windows[id];
 	if (window) {
-		window->OnKeyDown(key);
+		window->onKeyDown(key);
 	}
 	else {
 		std::cout << "Error Window Loading" << std::endl;
 	}
 }
 
-void Window::OnKeyDownStatic(unsigned char key, int x, int y) 
+void Window::onKeyDownStatic(unsigned char key, int x, int y) 
 {
 	int id = glutGetWindow();
 	Window* window = windows[id];
 	if (window) {
-		window->OnKeyDown(key);
+		window->onKeyDown(key);
 	}
 	else {
 		std::cout << "Error Window Loading" << std::endl;
 	}
 }
 
-void Window::OnPassiveMouseMotionStatic(int x, int y) 
+void Window::onPassiveMouseMotionStatic(int x, int y) 
 {
 	int id = glutGetWindow();
 	Window* window = windows[id];
 	if (window) {
-		window->OnPassiveMouseMotion(x, y);
+		window->onPassiveMouseMotion(x, y);
 	}
 	else {
 		std::cout << "Error Window Loading" << std::endl;
 	}
 }
 
-void Window::OnDraw() 
+void Window::onDraw() 
 {
 	TimePoint currentTime = std::chrono::steady_clock::now();
 	lastDelta = std::chrono::duration_cast<std::chrono::milliseconds> (currentTime - deltaMarker).count() * 0.001f;
 	deltaMarker = currentTime;
 
-	app->OnDraw(lastDelta);
+	app->onDraw(lastDelta);
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
 
-void Window::OnKeyDown(int key) 
+void Window::onKeyDown(int key) 
 {
-	app->OnKeyDown(key, lastDelta);
+	app->onKeyDown(key, lastDelta);
 }
 
-void Window::OnPassiveMouseMotion(int x, int y)
+void Window::onPassiveMouseMotion(int x, int y)
 {
-	app->OnPassiveMouseMotion(x, y);
+	app->onPassiveMouseMotion(x, y);
 }
 
-void Window::StartMainLoop() 
+void Window::startMainLoop() 
 {
-	glutDisplayFunc(&Window::OnDrawStatic);
-	glutKeyboardFunc(&Window::OnKeyDownStatic);
-	glutSpecialFunc(&Window::OnKeyDownSpecialStatic);
-	glutPassiveMotionFunc(&Window::OnPassiveMouseMotionStatic);
+	glutDisplayFunc(&Window::onDrawStatic);
+	glutKeyboardFunc(&Window::onKeyDownStatic);
+	glutSpecialFunc(&Window::onKeyDownSpecialStatic);
+	glutPassiveMotionFunc(&Window::onPassiveMouseMotionStatic);
 	glutMainLoop();
 }

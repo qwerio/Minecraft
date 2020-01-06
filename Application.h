@@ -37,10 +37,10 @@ public:
 		groundTexture(nullptr), 
 		cubeMesh(nullptr) {}
 
-	void OnInit(const RenderSettings& settings)
+	void onInit(const RenderSettings& settings)
 	{	
 		this->settings = settings;
-		renderer.Init();
+		renderer.init();
 
 		std::vector<std::string> texturePaths;
 		texturePaths.push_back("C:/Users/ASUS/Desktop/grassBlock.jpg");
@@ -48,16 +48,16 @@ public:
 		
 		for (const std::string& path : texturePaths) 
 		{
-			Material* material = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
+			Material* material = renderer.createMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/fragment.fs");
 			groundMaterials.push_back(material);
-			material->textures.push_back(renderer.CreateTextureFromFile(path.c_str()));
+			material->textures.push_back(renderer.createTextureFromFile(path.c_str()));
 		}
 
-		cubeMesh = renderer.CreateMesh(MeshType::CUBE);
+		cubeMesh = renderer.createMesh(MeshType::CUBE);
 
-		Material* wireFrameMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/wireFrame.fs");
+		Material* wireFrameMaterial = renderer.createMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/vertex.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/wireFrame.fs");
 		scene[nextNodeId] = Node(nextNodeId);
-		Mesh* cubeWireframeMesh = renderer.CreateMesh(MeshType::WIREFRAMECUBE);
+		Mesh* cubeWireframeMesh = renderer.createMesh(MeshType::WIREFRAMECUBE);
 		wireFrameCube = &scene[nextNodeId];
 		wireFrameCube->id = nextNodeId;
 		wireFrameCube->material = wireFrameMaterial;
@@ -65,10 +65,10 @@ public:
 		nextNodeId++;
 
 		
-		Material* materialPreviewMaterial = renderer.CreateMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.fs");
+		Material* materialPreviewMaterial = renderer.createMaterialFromFile("C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.vs", "C:/Users/ASUS/source/repos/Minecraft/shaders/screenPlane.fs");
 		materialPreviewMaterial->textures.push_back(groundMaterials[currentGroundMaterial]->textures[0]);
 		scene[nextNodeId] = Node(nextNodeId);
-		Mesh* materialPreviewMesh = renderer.CreateMesh(MeshType::PLANE);
+		Mesh* materialPreviewMesh = renderer.createMesh(MeshType::PLANE);
 		materialPreviewNode = &scene[nextNodeId];
 		materialPreviewNode->id = nextNodeId;
 		materialPreviewNode->material = materialPreviewMaterial;
@@ -93,7 +93,7 @@ public:
 
 	}
 
-	void OnDraw(float delta)
+	void onDraw(float delta)
 	{
 		frameIndex++;
 		// TODO: update scene
@@ -101,7 +101,7 @@ public:
 		uint64_t cellIndex;
 		vec3 pos;
 
-		if (!GetCellIndex(camera, cellIndex, pos))
+		if (!getCellIndex(camera, cellIndex, pos))
 			return;
 
 		wireFrameCube->model = mat4(
@@ -112,30 +112,30 @@ public:
 		);
 
 		updateDestructionAnimations(delta);
-		renderer.OnRender(camera, settings, scene, frameIndex);
+		renderer.onRender(camera, settings, scene, frameIndex);
 	}
 
-	void OnKeyDown(int key, float delta) 
+	void onKeyDown(int key, float delta) 
 	{
 		switch (key)
 		{
 		case(GLUT_KEY_UP):
-			camera.ProcessKeyboard(Camera_Movement::FORWARD, delta);
+			camera.processKeyboard(Camera_Movement::FORWARD, delta);
 			break;
 		case(GLUT_KEY_DOWN):
-			camera.ProcessKeyboard(Camera_Movement::BACKWARD, delta);
+			camera.processKeyboard(Camera_Movement::BACKWARD, delta);
 			break;
 		case(GLUT_KEY_RIGHT):
-			camera.ProcessKeyboard(Camera_Movement::RIGHT, delta);
+			camera.processKeyboard(Camera_Movement::RIGHT, delta);
 			break;
 		case(GLUT_KEY_LEFT):
-			camera.ProcessKeyboard(Camera_Movement::LEFT, delta);
+			camera.processKeyboard(Camera_Movement::LEFT, delta);
 			break;
 		case(GLUT_KEY_F1):
-			CreateNode();
+			createNode();
 			break;
 		case(GLUT_KEY_F2):
-			DestroyNode();
+			destroyNode();
 			break;
 		case(GLUT_KEY_F7):
 			currentGroundMaterial++;
@@ -153,8 +153,10 @@ public:
 
 	}
 
-	void OnPassiveMouseMotion(int x, int y) 
+	void onPassiveMouseMotion(int x, int y) 
 	{
+		glutSetCursor(GLUT_CURSOR_CROSSHAIR);
+
 		if (firstMouse)
 		{
 			lastX = x;
@@ -163,18 +165,19 @@ public:
 		}
 		else
 		{
-			camera.ProcessMouseMovement(float(x - lastX), float(lastY - y));
+			camera.processMouseMovement(float(x - lastX), float(lastY - y));
 			lastX = x;
 			lastY = y;
 		}
+		
 	}
 
-	void CreateNode()
+	void createNode()
 	{
 		uint64_t cellIndex;
 		vec3 pos;
 
-		if (!GetCellIndex(camera, cellIndex, pos))
+		if (!getCellIndex(camera, cellIndex, pos))
 			return;
 
 		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
@@ -198,12 +201,12 @@ public:
 		nextNodeId++;
 	}
 
-	void DestroyNode()
+	void destroyNode()
 	{
 		uint64_t cellIndex;
 		vec3 pos;
 
-		if (!GetCellIndex(camera, cellIndex, pos))
+		if (!getCellIndex(camera, cellIndex, pos))
 			return;
 
 		SceneLookUp::iterator it = sceneLookUp.find(cellIndex);
@@ -219,7 +222,7 @@ public:
 		
 	}
 
-	bool GetCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
+	bool getCellIndex(const Camera& camera, uint64_t& index, vec3& pos) const
 	{
 		pos = floor(camera.Position + camera.Front * 5.0f);
 		const int halfDimension = (1 << 19);
@@ -268,13 +271,17 @@ public:
 
 					nextNodeId++;
 
-					float r0 = (rand() % 100) * 0.02f - 1.0f;
-					float r1 = (rand() % 100) * 0.02f - 1.0f;
+
+					float u = ((rand() % 100) * 0.02f - 1.0f) * M_PI;
+					float v = ((rand() % 100) * 0.01f);
+					float r0 = sin(u) * sqrt(1.0f - v * v);
+					float r1 = v;
+					float r2 = cos(u) * sqrt(1.0f - v * v);
 					const int index = (z * subdivisions + y) * subdivisions + x;
 					DestructionAnimationNode& animationNode = nodes[index];
 					animationNode.node = node;
 					animationNode.duration = 2.0f;
-					animationNode.direction = normalize(vec3(r0, 100.0f, r1));
+					animationNode.direction = vec3(r0, r1 * 10.0f, r2);
 				}
 			}
 		}
@@ -353,15 +360,14 @@ private:
 			}
 
 			const vec3 gravity = vec3(0.0f, -9.8f, 0.0f);
-			const float velocity = 10.0f;
-			vec3 offset = (direction * velocity + gravity) * deltaTime;
+			vec3 offset = (direction + gravity) * deltaTime;
 			node->model += mat4(
 				vec4(0.0f, 0.0f, 0.0f, 0.0f),
 				vec4(0.0f, 0.0f, 0.0f, 0.0f),
 				vec4(0.0f, 0.0f, 0.0f, 0.0f),
 				vec4(offset.x, offset.y, offset.z, 0.0f)
 			);
-
+			direction += gravity * deltaTime;
 		}
 	};
 

@@ -66,12 +66,12 @@ public:
 	}
 
 	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-	glm::mat4 GetViewMatrix() const
+	glm::mat4 getViewMatrix() const
 	{
 		return glm::lookAt(Position, Position + Front, Up);
 	}
 
-	glm::mat4 GetProjMatrix(int width, int height) const
+	glm::mat4 getProjMatrix(int width, int height) const
 	{	
 		return glm::perspective(float(M_PI_4), (float)width / (float)height, 0.01f, 1000.0f);
 	}
@@ -80,7 +80,7 @@ public:
 	
 	//TO DO: using real delta
 	
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+	void processKeyboard(Camera_Movement direction, float deltaTime)
 	{
 		float velocity = MovementSpeed * deltaTime;
 
@@ -95,7 +95,7 @@ public:
 	}
 
 	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+	void processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
 	{
 		xoffset *= MouseSensitivity;
 		yoffset *= MouseSensitivity;
@@ -117,7 +117,7 @@ public:
 	}
 
 	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
-	void ProcessMouseScroll(float yoffset)
+	void processMouseScroll(float yoffset)
 	{
 		if (Zoom >= 1.0f && Zoom <= 45.0f)
 			Zoom -= yoffset;

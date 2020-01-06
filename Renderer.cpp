@@ -18,7 +18,7 @@ using namespace glm;
 
 Renderer::Renderer(){}
 
-void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) 
+void Renderer::onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex) 
 {
 	const vec4& color = settings.backGroundColor;
 	glClearColor(color.x, color.y, color.z, 1.0f);
@@ -31,17 +31,17 @@ void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, co
 		glBindVertexArray(node.mesh->ID);
 		//TO DO: Change scene to map<Material*, Nodes> for more efficient rendering
 		Material* material = const_cast<Material*>(node.material);
-		material->SetVec3("cameraPos", camera.Position);
+		material->setVec3("cameraPos", camera.Position);
 		Shader& shader = materials[material];
 
 		if(material->isWireFrame)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-		shader.Use();
-		shader.SetInt("Texture1", 0); // TO DO: move to texture loop (need to use either stringstream or sprintf)
-		shader.SetMat4("model", node.model);
-		shader.SetMat4("view", camera.GetViewMatrix());
-		shader.SetMat4("proj", camera.GetProjMatrix(settings.width, settings.height));
+		shader.use();
+		shader.setInt("Texture1", 0); // TO DO: move to texture loop (need to use either stringstream or sprintf)
+		shader.setMat4("model", node.model);
+		shader.setMat4("view", camera.getViewMatrix());
+		shader.setMat4("proj", camera.getProjMatrix(settings.width, settings.height));
 
 		for (int j = 0; j < material->textures.size(); j++) 
 		{
@@ -71,7 +71,7 @@ void Renderer::OnRender(const Camera& camera, const RenderSettings& settings, co
 	
 }
 
-void Renderer::Init() 
+void Renderer::init() 
 {
 	if (glewInit())
 		std::cout << "Failed to initialize GLEW" << std::endl;
@@ -83,7 +83,7 @@ void Renderer::Init()
 	Camera camera(glm::vec3(0.0f, 2.0f, 3.0f));
 }
 
-bool Renderer::LoadTexture(const char* filename, GLuint& texID)
+bool Renderer::loadTexture(const char* filename, GLuint& texID)
 {
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
@@ -122,17 +122,17 @@ bool Renderer::LoadTexture(const char* filename, GLuint& texID)
 	return true;
 }
 
-Material* Renderer::CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath)
+Material* Renderer::createMaterialFromFile(const char* vertexPath, const char* fragmentPath)
 {
 	//TO DO: Move everything from shader.h to render.h 
 	
 	Material* material = new Material();
-	materials[material].Load(vertexPath, fragmentPath);
+	materials[material].load(vertexPath, fragmentPath);
 	material->shaderID = materials[material].ID;
 	return material;
 }
 
-void Renderer::DestroyMaterial(Material* material)
+void Renderer::destroyMaterial(Material* material)
 {
 	Materials::iterator it = materials.find(material);
 	if (it != materials.end())
@@ -142,7 +142,7 @@ void Renderer::DestroyMaterial(Material* material)
 	delete  material;
 }
 
-Texture* Renderer::CreateTextureFromFile(const char* textureFilename)
+Texture* Renderer::createTextureFromFile(const char* textureFilename)
 {
 	Texture* texture = new Texture();
 	textures.insert(texture);
@@ -184,7 +184,7 @@ Texture* Renderer::CreateTextureFromFile(const char* textureFilename)
 	return texture;
 }
 
-void Renderer::DestroyTexture(Texture* texture)
+void Renderer::destroyTexture(Texture* texture)
 {
 	Textures::iterator it = textures.find(texture);
 	if (it != textures.end())
@@ -194,7 +194,7 @@ void Renderer::DestroyTexture(Texture* texture)
 	delete texture;
 }
 
-Mesh* Renderer::CreateMesh(MeshType type) 
+Mesh* Renderer::createMesh(MeshType type) 
 {
 	Vertices vertices;
 	Indices indices;
@@ -266,7 +266,7 @@ Mesh* Renderer::CreateMesh(MeshType type)
 	return mesh;
 }
 
-void Renderer::DestroyMesh(Mesh* mesh)
+void Renderer::destroyMesh(Mesh* mesh)
 {
 	Meshes::iterator it = meshes.find(mesh);
 	if (it != meshes.end())
@@ -276,7 +276,7 @@ void Renderer::DestroyMesh(Mesh* mesh)
 	delete mesh;
 }
 
-vec3 Renderer::ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const
+vec3 Renderer::computeNormal(const vec3& a, const vec3& b, const vec3& c) const
 {
 	vec3 ab = b - a;
 	vec3 ac = c - a;
@@ -329,7 +329,7 @@ void  Renderer::createCube(Vertices& vertices, Indices& indices) const
 		indices[i + 5] = 3 + offset;
 
 		//calculate normals for two triangles
-		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vec3 n0 = computeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
 		vertices[offset + 0].normal = n0;
 		vertices[offset + 1].normal = n0;
 		vertices[offset + 2].normal = n0;
@@ -340,7 +340,7 @@ void  Renderer::createCube(Vertices& vertices, Indices& indices) const
 void Renderer::createWireframeCube(Vertices& vertices, Indices& indices) const
 {
 	// TODO: reuse vertices from createCube()
-	//TO DO: use resize() instead of push_back()
+	// TODO: use resize() instead of push_back()
 	vertices.push_back({ vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, 1.0f, 0.0f),    vec2(2.0f / 3.0f, 0.0f), vec3(0.0f, 0.0f, 0.0f) }); //    0
 	vertices.push_back({ vec3(1.0f, 0.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(2.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    1
 	vertices.push_back({ vec3(1.0f, 1.0f, 1.0f),  vec3(1.0f, 0.0f, 0.0f),    vec2(1.0f / 3.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f) }); //    2
@@ -387,7 +387,7 @@ void Renderer::createWireframeCube(Vertices& vertices, Indices& indices) const
 		indices[i + 7] = 0 + offset;
 
 		//calculate normals for two triangles
-		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vec3 n0 = computeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
 		vertices[offset + 0].normal = n0;
 		vertices[offset + 1].normal = n0;
 		vertices[offset + 2].normal = n0;
@@ -415,12 +415,10 @@ void Renderer::createPlane(Vertices& vertices, Indices& indices) const
 		indices[i + 5] = 3 + offset;
 
 		//calculate normals for two triangles
-		vec3 n0 = ComputeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
+		vec3 n0 = computeNormal(vertices[offset + 0].pos, vertices[offset + 1].pos, vertices[offset + 2].pos);
 		vertices[offset + 0].normal = n0;
 		vertices[offset + 1].normal = n0;
 		vertices[offset + 2].normal = n0;
 		vertices[offset + 3].normal = n0;
 	}
 }
-
-

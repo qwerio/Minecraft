@@ -48,20 +48,20 @@ public:
 
 	Renderer();
 
-	void OnRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex);
+	void onRender(const Camera& camera, const RenderSettings& settings, const Scene& scene, int frameIndex);
 
-	void Init();
+	void init();
 
-	bool LoadTexture(const char* filename, GLuint& texID);
+	bool loadTexture(const char* filename, GLuint& texID);
 
-	Material* CreateMaterialFromFile(const char* vertexPath, const char* fragmentPath);
-	void DestroyMaterial(Material* material);
+	Material* createMaterialFromFile(const char* vertexPath, const char* fragmentPath);
+	void destroyMaterial(Material* material);
 
-	Texture* CreateTextureFromFile(const char* textureFilename);
-	void DestroyTexture(Texture* texture);
+	Texture* createTextureFromFile(const char* textureFilename);
+	void destroyTexture(Texture* texture);
 
-	Mesh* CreateMesh(MeshType type);
-	void DestroyMesh(Mesh* mesh);
+	Mesh* createMesh(MeshType type);
+	void destroyMesh(Mesh* mesh);
 
 private:
 	typedef std::unordered_set<Texture*> Textures;
@@ -71,7 +71,7 @@ private:
 	Materials materials;
 	Meshes meshes;
 	
-	vec3 ComputeNormal(const vec3& a, const vec3& b, const vec3& c) const;
+	vec3 computeNormal(const vec3& a, const vec3& b, const vec3& c) const;
 
 	typedef std::vector<Vertex> Vertices;
 	typedef std::vector<int> Indices;
